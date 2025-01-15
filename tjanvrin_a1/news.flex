@@ -50,7 +50,9 @@ identifier = {letter}+
    This section contains regular expressions and actions, i.e. Java
    code, that will be executed when the scanner matches the associated
    regular expression. */
-   
+
+   // put the new stuff here
+  
 "if"               { return new Token(Token.IF, yytext(), yyline, yycolumn); }
 "then"             { return new Token(Token.THEN, yytext(), yyline, yycolumn); }
 "else"             { return new Token(Token.ELSE, yytext(), yyline, yycolumn); }
