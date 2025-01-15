@@ -53,27 +53,25 @@ identifier = {letter}+
 
    // put the new stuff here
   
-"if"               { return new Token(Token.IF, yytext(), yyline, yycolumn); }
-"then"             { return new Token(Token.THEN, yytext(), yyline, yycolumn); }
-"else"             { return new Token(Token.ELSE, yytext(), yyline, yycolumn); }
-"end"              { return new Token(Token.END, yytext(), yyline, yycolumn); }
-"repeat"           { return new Token(Token.REPEAT, yytext(), yyline, yycolumn); }
-"until"            { return new Token(Token.UNTIL, yytext(), yyline, yycolumn); }
-"read"             { return new Token(Token.READ, yytext(), yyline, yycolumn); }
-"write"            { return new Token(Token.WRITE, yytext(), yyline, yycolumn); }
-":="               { return new Token(Token.ASSIGN, yytext(), yyline, yycolumn); }
-"="                { return new Token(Token.EQ, yytext(), yyline, yycolumn); }
-"<"                { return new Token(Token.LT, yytext(), yyline, yycolumn); }
-">"                { return new Token(Token.GT, yytext(), yyline, yycolumn); }
-"+"                { return new Token(Token.PLUS, yytext(), yyline, yycolumn); }
-"-"                { return new Token(Token.MINUS, yytext(), yyline, yycolumn); }
-"*"                { return new Token(Token.TIMES, yytext(), yyline, yycolumn); }
-"/"                { return new Token(Token.OVER, yytext(), yyline, yycolumn); }
-"("                { return new Token(Token.LPAREN, yytext(), yyline, yycolumn); }
-")"                { return new Token(Token.RPAREN, yytext(), yyline, yycolumn); }
-";"                { return new Token(Token.SEMI, yytext(), yyline, yycolumn); }
-{number}           { return new Token(Token.NUM, yytext(), yyline, yycolumn); }
-{identifier}       { return new Token(Token.ID, yytext(), yyline, yycolumn); }
+"<TAG>"                    { return new Token(Token.OPEN_TAG, yytext(), yyline, yycolumn); }
+"</TAG>"                   { return new Token(Token.CLOSE_TAG, yytext(), yyline, yycolumn); }
+"<DOC>"                    { return new Token(Token.OPEN_DOC, yytext(), yyline, yycolumn); }
+"</DOC>"                   { return new Token(Token.CLOSE_DOC, yytext(), yyline, yycolumn); }
+"<TEXT>"                   { return new Token(Token.OPEN_TEXT, yytext(), yyline, yycolumn); }
+"</TEXT>"                  { return new Token(Token.CLOSE_TEXT, yytext(), yyline, yycolumn); }
+"<DATE>"                   { return new Token(Token.OPEN_DATE, yytext(), yyline, yycolumn); }
+"</DATE>"                  { return new Token(Token.CLOSE_DATE, yytext(), yyline, yycolumn); }
+"<DOCNO>"                  { return new Token(Token.OPEN_DOCNO, yytext(), yyline, yycolumn); }
+"</DOCNO>"                 { return new Token(Token.CLOSE_DOCNO, yytext(), yyline, yycolumn); }
+"<HEADLINE>"               { return new Token(Token.OPEN_HEADLINE, yytext(), yyline, yycolumn); }
+"</HEADLINE>"                { return new Token(Token.CLOSE_HEADLINE, yytext(), yyline, yycolumn); }
+"<LENGTH>"                { return new Token(Token.OPEN_LENGTH, yytext(), yyline, yycolumn); }
+"</LENGTH>"                { return new Token(Token.CLOSE_LENGTH, yytext(), yyline, yycolumn); }
+{letter}+                { return new Token(Token.WORD, yytext(), yyline, yycolumn); }
+{number}                { return new Token(Token.NUMBER, yytext(), yyline, yycolumn); }
+({letter}*"'")+({letter}*)               { return new Token(Token.APOSTROPHIZED, yytext(), yyline, yycolumn); }
+({letter}*"-")+({letter}*)                 { return new Token(Token.HYPHENATED, yytext(), yyline, yycolumn); }
+[^\w\s]+              { return new Token(Token.PUNCTUATION, yytext(), yyline, yycolumn); }
 {WhiteSpace}+      { /* skip whitespace */ }   
-"{"[^\}]*"}"       { /* skip comments */ }
+// "{"[^\}]*"}"       { /* skip comments */ } // don't skip comments
 .                  { return new Token(Token.ERROR, yytext(), yyline, yycolumn); }

@@ -19,6 +19,7 @@ class Token {
   public final static int APOSTROPHIZED = 16;
   public final static int HYPHENATED = 17;
   public final static int PUNCTUATION = 18;
+  public final static int ERROR = 19;
   
 
   public int m_type;
@@ -73,6 +74,8 @@ class Token {
         return "HYPHENATED(" + m_value + ")";
       case PUNCTUATION:
         return "PUNCTUATION(" + m_value + ")";
+      case ERROR:
+        return "ERROR(" + m_value + ")";
       default:
         return "UNKNOWN(" + m_value + ")";
     }
