@@ -24,12 +24,12 @@ import java.util.ArrayList;
   
   // extracts the tag name out of the tag string
   private static String getTagName(String tag){
-
+      return "";
   }
 
    // checks to see if two tags have the same name
   private static boolean compareTagNames(String name1, String name2){
-
+      return false;
   }
 
   // static method such as getTagName can be defined here as well
