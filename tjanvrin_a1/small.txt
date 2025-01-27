@@ -1,0 +1,29 @@
+<DOC>
+<TExT>
+Hello World.
+
+Here are some tags:
+</TExT>
+<Date><DocNo><Headline><lENGTH>
+
+</lEnGTH></HEADLINE></docno></dATE>
+
+<text>
+and now, some more text. 
+
+some irrelevant tags:
+<fool>
+<water>
+dog cat frog
+</water>
+</fool>
+
+<paste>
+<tower>
+
+</tower>
+</paste>
+
+
+</text>
+</DOC>

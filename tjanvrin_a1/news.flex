@@ -21,6 +21,16 @@ import java.util.ArrayList;
 
 %{
   private static ArrayList<String> tagStack = new ArrayList<String>();
+  
+  // extracts the tag name out of the tag string
+  private static String getTagName(String tag){
+
+  }
+
+   // checks to see if two tags have the same name
+  private static boolean compareTagNames(String name1, String name2){
+
+  }
 
   // static method such as getTagName can be defined here as well
 %};

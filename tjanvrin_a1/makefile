@@ -12,3 +12,6 @@ Lexer.java: news.flex
 
 clean:
 	rm -f Lexer.java *.class *~
+
+cleanw:
+	del -f Lexer.java *.class *~
