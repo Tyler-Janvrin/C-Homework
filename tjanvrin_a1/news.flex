@@ -53,6 +53,14 @@ number = {digit}+
    between A and Z, a and z, zero and nine, or an underscore. */
 letter = [a-zA-Z]
 identifier = {letter}+
+
+/* A tagname can contain numbers, uppercase, and lowercase letters */
+
+tagname = [a-zA-Z0-9]
+
+/* An attribute-value pair is complex */
+
+attvalpair = [a-zA-Z]
    
 %%
    
