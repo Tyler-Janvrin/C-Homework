@@ -13,3 +13,4 @@ For HYPHENATED and APOSTROPHIZED, I'm making the assumption that things like -do
 
 I gave <P> its own tags, OPEN-P and CLOSE-P. I'm not 100% sure this was what you wanted, but it made more sense to me.
 I also chose to keep <P> tags if there are only <P> tags. I don't think this should ever actually happen, becasue there should always be a DOC tag, but it's a decision I made.
+I also chose to ignore errors that aren't related to OPEN-TAG and CLOSE-TAG if they're in an irrelevant block. Nor sure if that's the right choice, but it's a choice I made.
