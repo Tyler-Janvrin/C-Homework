@@ -40,7 +40,9 @@ import java.util.ArrayList;
 LineTerminator = \r|\n|\r\n
    
 /* White space is a line terminator, space, tab, or form feed. */
-WhiteSpace     = {LineTerminator} | [ \t\f]
+
+ws = \s
+// ws = {LineTerminator} | [ \t\f] // using a short form for whitespace, cause I might want to use it a lot. // leaving this for reference
    
 /* A literal integer is is a number beginning with a number between
    one and nine followed by zero or more numbers between zero and nine
@@ -48,19 +50,23 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 digit = [0-9]
 number = {digit}+
    
-/* A identifier integer is a word beginning a letter between A and
-   Z, a and z, or an underscore followed by zero or more letters
-   between A and Z, a and z, zero and nine, or an underscore. */
+/* A letter is anything from A-Z or a-z*/
 letter = [a-zA-Z]
-identifier = {letter}+
+/* Words can have letters in them, so */
+letternumber = [a-zA-Z0-9]
+word = {letternumber}+
 
-/* A tagname can contain numbers, uppercase, and lowercase letters */
+/* A tagname can contain numbers, uppercase, and lowercase letters, and dashes */
 
-tagname = [a-zA-Z0-9]
+tagnamechar = [-a-zA-Z0-9]
+tagname = {tagnamechar}+
 
-/* An attribute-value pair is complex */
+/* An attribute-value pair is complex. I'm going to assume that the initial value can be any word
+, but it has to start with a letter and that the bit in the value can be any string */
 
-attvalpair = [a-zA-Z]
+attvalpair = {letter}{word}*=\".*\"
+
+
    
 %%
    
@@ -71,8 +77,10 @@ attvalpair = [a-zA-Z]
 
    // put the new stuff here
   
-"<TAG>"                    { return new Token(Token.OPEN_TAG, yytext(), yyline, yycolumn); }
-"</TAG>"                   { return new Token(Token.CLOSE_TAG, yytext(), yyline, yycolumn); }
+(<{ws}*{tagname}({ws}*{attvalpair})*{ws}*>)                    { return new Token(Token.OPEN_TAG, yytext(), yyline, yycolumn); }
+(<{ws}*"/"{ws}*{tagname}({ws}*{attvalpair})*{ws}*>)                   { return new Token(Token.CLOSE_TAG, yytext(), yyline, yycolumn); }
+/*
+Commenting these out while I work
 "<DOC>"                    { return new Token(Token.OPEN_DOC, yytext(), yyline, yycolumn); }
 "</DOC>"                   { return new Token(Token.CLOSE_DOC, yytext(), yyline, yycolumn); }
 "<TEXT>"                   { return new Token(Token.OPEN_TEXT, yytext(), yyline, yycolumn); }
@@ -82,14 +90,19 @@ attvalpair = [a-zA-Z]
 "<DOCNO>"                  { return new Token(Token.OPEN_DOCNO, yytext(), yyline, yycolumn); }
 "</DOCNO>"                 { return new Token(Token.CLOSE_DOCNO, yytext(), yyline, yycolumn); }
 "<HEADLINE>"               { return new Token(Token.OPEN_HEADLINE, yytext(), yyline, yycolumn); }
-"</HEADLINE>"                { return new Token(Token.CLOSE_HEADLINE, yytext(), yyline, yycolumn); }
-"<LENGTH>"                { return new Token(Token.OPEN_LENGTH, yytext(), yyline, yycolumn); }
+"</HEADLINE>"              { return new Token(Token.CLOSE_HEADLINE, yytext(), yyline, yycolumn); }
+"<LENGTH>"                 { return new Token(Token.OPEN_LENGTH, yytext(), yyline, yycolumn); }
 "</LENGTH>"                { return new Token(Token.CLOSE_LENGTH, yytext(), yyline, yycolumn); }
-{letter}+                { return new Token(Token.WORD, yytext(), yyline, yycolumn); }
-{number}                { return new Token(Token.NUMBER, yytext(), yyline, yycolumn); }
-({letter}*"'")+({letter}*)               { return new Token(Token.APOSTROPHIZED, yytext(), yyline, yycolumn); }
-({letter}*"-")+({letter}*)                 { return new Token(Token.HYPHENATED, yytext(), yyline, yycolumn); }
-[^\w\s]+              { return new Token(Token.PUNCTUATION, yytext(), yyline, yycolumn); }
-{WhiteSpace}+      { /* skip whitespace */ }   
+*/
+
+
+// there's a special case here for number - that's to recognize numbers of the form .1234, which in my opinion is a valid number 
+(("+"|"-")?{number}+("."{number}+)?)|(("+"|"-")?"."{number}+)           { return new Token(Token.NUMBER, yytext(), yyline, yycolumn); }
+({letter}*"'")+({letter}*)                   { return new Token(Token.APOSTROPHIZED, yytext(), yyline, yycolumn); }
+({letter}*"-")+({letter}*)                   { return new Token(Token.HYPHENATED, yytext(), yyline, yycolumn); }
+{word}                             { return new Token(Token.WORD, yytext(), yyline, yycolumn); } 
+// putting word after number, because words can have numbers in but numbers can't have letters
+[^\w\s]+                                     { return new Token(Token.PUNCTUATION, yytext(), yyline, yycolumn); }
+{ws}+                                        { /* skip whitespace */ }   
 // "{"[^\}]*"}"       { /* skip comments */ } // don't skip comments
-.                  { return new Token(Token.ERROR, yytext(), yyline, yycolumn); }
+.                                            { return new Token(Token.ERROR, yytext(), yyline, yycolumn); } // all other characters are ERRORs.
