@@ -1,0 +1,17 @@
+<DOC>
+
+
+    First, we'll try closing too many times.
+    <HEADLINE>
+
+    </HEADLINE>
+    </HEADLINE>
+
+    Then, we'll try matching the wrong tag.
+
+    <LENGTH>
+
+    </DATE>
+    </LENGTH>
+
+</DOC>

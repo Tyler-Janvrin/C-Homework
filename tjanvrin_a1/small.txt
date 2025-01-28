@@ -14,13 +14,13 @@ and now, some more text.
 some irrelevant tags:
 <fool>
 <water>
-dog cat frog
+dog cat frog this text should be ignored 123.456 -cattle- o'malley
 </water>
 </fool>
 
 <paste>
 <tower>
-
+    also ignore this
 </tower>
 </paste>
 

@@ -407,6 +407,40 @@ class Lexer {
 
   /* user code: */
   private static ArrayList<String> tagStack = new ArrayList<String>();
+  private static int filterCount = 0;
+
+   /* Returns true if we should be ignoring text.*/
+   private static boolean ignoring(){
+      return filterCount > 0;
+   }
+
+
+   /* Peek operation for the tag stack. Returns empty string if the stack is empty.*/
+  private static String peek(){
+      if(tagStack.size() == 0){
+         return "";
+      }
+      else{
+         return tagStack.get(tagStack.size() - 1);
+      }
+  }
+
+   /* Pop operation for the tag stack. Returns empty string if the stack is empty.*/
+  private static String pop(){
+      if(tagStack.size() == 0){
+         return "";
+      }
+      else{
+         String returnval = tagStack.get(tagStack.size() - 1);
+         tagStack.remove(tagStack.size() - 1);
+         return returnval;
+      }
+  }
+
+   /* Push operation for the tag stack. */ 
+  private static void push(String name){
+      tagStack.add(name);
+  }
 
    // feels slightly better to declare this string this way. less "magic number-ey"
    final static String TAGNAMECHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-";
@@ -826,7 +860,7 @@ class Lexer {
       else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
           case 1: 
-            { return new Token(Token.PUNCTUATION, yytext(), yyline, yycolumn);
+            { if(!ignoring()){ return new Token(Token.PUNCTUATION, yytext(), yyline, yycolumn); }
             } 
             // fall through
           case 10: break;
@@ -836,37 +870,148 @@ class Lexer {
             // fall through
           case 11: break;
           case 3: 
-            { return new Token(Token.NUMBER, yytext(), yyline, yycolumn);
+            { if (!ignoring()){return new Token(Token.NUMBER, yytext(), yyline, yycolumn);}
             } 
             // fall through
           case 12: break;
           case 4: 
-            { return new Token(Token.WORD, yytext(), yyline, yycolumn);
+            { if(!ignoring()){ return new Token(Token.WORD, yytext(), yyline, yycolumn); }
             } 
             // fall through
           case 13: break;
           case 5: 
-            { return new Token(Token.ERROR, yytext(), yyline, yycolumn);
+            { if(!ignoring()){ return new Token(Token.ERROR, yytext(), yyline, yycolumn); }
             } 
             // fall through
           case 14: break;
           case 6: 
-            { return new Token(Token.HYPHENATED, yytext(), yyline, yycolumn);
+            { if(!ignoring()){return new Token(Token.HYPHENATED, yytext(), yyline, yycolumn); }
             } 
             // fall through
           case 15: break;
           case 7: 
-            { return new Token(Token.APOSTROPHIZED, yytext(), yyline, yycolumn);
+            { if(!ignoring()){return new Token(Token.APOSTROPHIZED, yytext(), yyline, yycolumn);}
             } 
             // fall through
           case 16: break;
           case 8: 
-            { return new Token(Token.OPEN_TAG, yytext(), yyline, yycolumn);
+            { String name = getTagName(yytext());
+
+      push(name);
+
+         // System.out.println(name + "\n");
+      if(name.equals("DOC")){
+         if(!ignoring()){
+            return new Token(Token.OPEN_DOC, yytext(), yyline, yycolumn);
+         } 
+      }
+      else if(name.equals("TEXT")){
+         if(!ignoring()){
+            return new Token(Token.OPEN_TEXT, yytext(), yyline, yycolumn);
+         }    
+      }
+      else if(name.equals("DATE")){
+         if(!ignoring()){
+            return new Token(Token.OPEN_DATE, yytext(), yyline, yycolumn);
+         }    
+         
+      }
+      else if(name.equals("DOCNO")){
+         if(!ignoring()){
+            return new Token(Token.OPEN_DOCNO, yytext(), yyline, yycolumn);
+         }    
+         
+         
+      }
+      else if(name.equals("HEADLINE")){
+         if(!ignoring()){
+            return new Token(Token.OPEN_HEADLINE, yytext(), yyline, yycolumn);
+         }    
+         
+      }
+      else if(name.equals("LENGTH")){
+         
+         if(!ignoring()){
+            return new Token(Token.OPEN_LENGTH, yytext(), yyline, yycolumn);
+         }    
+      }
+      else if(name.equals("P")){
+         if(!ignoring()){
+            return new Token(Token.CLOSE_P, yytext(), yyline, yycolumn);
+         }    
+         
+      }
+      else{
+         filterCount++; // if we're adding an irrelevant tag, filter count increases
+         if(!ignoring()){
+            return new Token(Token.OPEN_TAG, yytext(), yyline, yycolumn);
+         }
+      }
             } 
             // fall through
           case 17: break;
           case 9: 
-            { return new Token(Token.CLOSE_TAG, yytext(), yyline, yycolumn);
+            { String name = getTagName(yytext());
+
+      String stackname = peek();
+
+      if(stackname.equals(name)){
+         pop(); // pop the name of the stack and continue as normal
+         if(name.equals("DOC")){
+            if(!ignoring()){
+               return new Token(Token.CLOSE_DOC, yytext(), yyline, yycolumn);
+            }         
+         }
+         else if(name.equals("TEXT")){
+            if(!ignoring()){
+               return new Token(Token.CLOSE_TEXT, yytext(), yyline, yycolumn);
+            }       
+            
+         }
+         else if(name.equals("DATE")){
+            if(!ignoring()){
+               return new Token(Token.CLOSE_DATE, yytext(), yyline, yycolumn);
+            }       
+            
+         }
+         else if(name.equals("DOCNO")){
+            if(!ignoring()){
+               return new Token(Token.CLOSE_DOCNO, yytext(), yyline, yycolumn);
+            }       
+            
+         }
+         else if(name.equals("HEADLINE")){
+            if(!ignoring()){
+               return new Token(Token.CLOSE_HEADLINE, yytext(), yyline, yycolumn);
+            }       
+            
+         }
+         else if(name.equals("LENGTH")){
+            if(!ignoring()){
+               return new Token(Token.CLOSE_LENGTH, yytext(), yyline, yycolumn);
+            }       
+            
+         }
+         else if(name.equals("P")){
+            if(!ignoring()){
+               return new Token(Token.CLOSE_P, yytext(), yyline, yycolumn);
+            }    
+            
+         }
+         else{
+            // if it doesn't match any of the relevant tags, we know we're removing an IRRELEVANT tag.
+            if(!ignoring()){
+               return new Token(Token.CLOSE_TAG, yytext(), yyline, yycolumn);
+            }    
+            
+            filterCount--; // if we're closing an irrelevant tag, we can reduce the filter count.
+         }
+      }
+      else{
+         // if the name doesn't match, add an error token and don't pop.
+         // do this even if tokens are being filtered
+         return new Token(Token.ERROR, yytext(), yyline, yycolumn);
+      }
             } 
             // fall through
           case 18: break;

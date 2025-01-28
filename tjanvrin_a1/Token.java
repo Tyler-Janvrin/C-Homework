@@ -20,6 +20,8 @@ class Token {
   public final static int HYPHENATED = 17;
   public final static int PUNCTUATION = 18;
   public final static int ERROR = 19;
+  public final static int OPEN_P = 20;
+  public final static int CLOSE_P = 21;
   
 
   public int m_type;
@@ -64,6 +66,10 @@ class Token {
         return "OPEN-LENGTH";
       case CLOSE_LENGTH:
         return "CLOSE-LENGTH";
+      case OPEN_P:
+        return "OPEN-P";
+      case CLOSE_P:
+        return "CLOSE-P";
       case WORD:
         return "WORD(" + m_value + ")";
       case NUMBER:

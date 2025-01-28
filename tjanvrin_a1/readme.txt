@@ -10,3 +10,6 @@ On windows, "cat yourfile.txt | java Scanner > outputfile.txt" seems to work.
 -
 
 For HYPHENATED and APOSTROPHIZED, I'm making the assumption that things like -dog or 'em are valid apostrophized words, because they are. I could have chosen differently, but this is what I chose to do.
+
+I gave <P> its own tags, OPEN-P and CLOSE-P. I'm not 100% sure this was what you wanted, but it made more sense to me.
+I also chose to keep <P> tags if there are only <P> tags. I don't think this should ever actually happen, becasue there should always be a DOC tag, but it's a decision I made.
