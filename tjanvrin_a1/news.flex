@@ -21,10 +21,42 @@ import java.util.ArrayList;
 
 %{
   private static ArrayList<String> tagStack = new ArrayList<String>();
+
+   // feels slightly better to declare this string this way. less "magic number-ey"
+   final static String TAGNAMECHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-";
+
+   /* Since tag names can contain hyphens, I need to define this function to check if characters are valid. */
+  private static boolean isTagNameChar(char c){
+      return TAGNAMECHARS.indexOf(c) >= 0;
+  }
   
-  // extracts the tag name out of the tag string
+  /* Extracts the tag name from strings matching the tag regex. We can assume that input
+  into this function is formatted as a tag, becasue it will only be called after matching to a regex.*/
   private static String getTagName(String tag){
-      return "";
+      String name = "";
+
+      int start = 0;
+      int end = 0;
+
+      boolean reading = false;
+
+      for(int i = 0; i < tag.length(); i++){
+         if(!reading){
+            if(isTagNameChar(tag.charAt(i))){ // read in characters until we see a tagname character
+               reading = true; // we start reading, and read until we hit a non-tagname character
+               name = name + tag.charAt(i);
+            }
+         }
+         else{
+            if(!isTagNameChar(tag.charAt(i))){
+               break; // we've seen all the tag name characters, and have hit whitespace or >
+            }
+            else{
+               name = name + tag.charAt(i); // otherwi
+            }
+         }
+      }
+      return name.toUpperCase();
   }
 
    // checks to see if two tags have the same name
@@ -36,8 +68,8 @@ import java.util.ArrayList;
 %};
 
 /* A line terminator is a \r (carriage return), \n (line feed), or
-   \r\n. */
-LineTerminator = \r|\n|\r\n
+   \r\n. This has been deprecated. */
+// LineTerminator = \r|\n|\r\n
    
 /* White space is a line terminator, space, tab, or form feed. */
 
@@ -77,7 +109,10 @@ attvalpair = {letter}{word}*=\".*\"
 
    // put the new stuff here
   
-(<{ws}*{tagname}({ws}*{attvalpair})*{ws}*>)                    { return new Token(Token.OPEN_TAG, yytext(), yyline, yycolumn); }
+(<{ws}*{tagname}({ws}*{attvalpair})*{ws}*>)                    { String name = getTagName(yytext());
+                                                                  if(name == "DOC")
+
+                                                                  return new Token(Token.OPEN_TAG, yytext(), yyline, yycolumn); }
 (<{ws}*"/"{ws}*{tagname}({ws}*{attvalpair})*{ws}*>)                   { return new Token(Token.CLOSE_TAG, yytext(), yyline, yycolumn); }
 /*
 Commenting these out while I work
@@ -98,8 +133,10 @@ Commenting these out while I work
 
 // there's a special case here for number - that's to recognize numbers of the form .1234, which in my opinion is a valid number 
 (("+"|"-")?{number}+("."{number}+)?)|(("+"|"-")?"."{number}+)           { return new Token(Token.NUMBER, yytext(), yyline, yycolumn); }
-({letter}*"'")+({letter}*)                   { return new Token(Token.APOSTROPHIZED, yytext(), yyline, yycolumn); }
-({letter}*"-")+({letter}*)                   { return new Token(Token.HYPHENATED, yytext(), yyline, yycolumn); }
+
+// this is long and complicated to deal with the fact that you could have things like -word- or word-word-, but not word---word
+'?{word}'({word}')*({word}'|{word})?|('{word}|{word})?('{word})*'{word}'?              { return new Token(Token.APOSTROPHIZED, yytext(), yyline, yycolumn); }
+-?{word}-({word}-)*({word}-|{word})?|(-{word}|{word})?(-{word})*-{word}-?                   { return new Token(Token.HYPHENATED, yytext(), yyline, yycolumn); }
 {word}                             { return new Token(Token.WORD, yytext(), yyline, yycolumn); } 
 // putting word after number, because words can have numbers in but numbers can't have letters
 [^\w\s]+                                     { return new Token(Token.PUNCTUATION, yytext(), yyline, yycolumn); }

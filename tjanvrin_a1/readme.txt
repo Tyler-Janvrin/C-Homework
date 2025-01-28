@@ -5,4 +5,8 @@ I added a target called cleanw that's the same as clean, but with del instead of
 
 To run the code, run "java Scanner < yourfile.txt", where yourfile.txt can be whatever file you want the scanner to run on.
 
-On windows, "cat yourfile.txt | java Scanner > outputfile.txt" seems to work
+On windows, "cat yourfile.txt | java Scanner > outputfile.txt" seems to work.
+
+-
+
+For HYPHENATED and APOSTROPHIZED, I'm making the assumption that things like -dog or 'em are valid apostrophized words, because they are. I could have chosen differently, but this is what I chose to do.

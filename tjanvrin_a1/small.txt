@@ -24,6 +24,18 @@ dog cat frog
 </tower>
 </paste>
 
+Apostrophized and hyphenated:
+-one
+two-
+three-four
+-five-six
+seven-eight
+nine-ten-Eleven
+-tweleve-thirteen-fourteen
+fifteen-sixteen-seventeen-
+-eighteen-nineteen-twenety-twentyone
+---not---apostrophized---
+
 Some numbers: 12345678910 -12.49808349023 +18.094290 .123 .
 
 </text>

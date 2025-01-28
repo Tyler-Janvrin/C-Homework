@@ -193,13 +193,13 @@ class Lexer {
   private static final int [] ZZ_ACTION = zzUnpackAction();
 
   private static final String ZZ_ACTION_PACKED_0 =
-    "\1\0\1\1\1\2\1\3\1\4\1\5\3\1\1\6"+
-    "\1\7\1\4\1\0\1\5\1\6\1\3\1\5\2\0"+
-    "\2\1\1\3\3\0\2\10\1\0\1\1\4\0\2\11"+
-    "\5\0\1\10\1\0\1\11";
+    "\1\0\1\1\1\2\1\3\1\4\5\1\1\5\1\6"+
+    "\1\0\1\7\1\3\1\6\2\0\2\1\2\3\1\7"+
+    "\3\0\2\10\1\0\1\1\4\0\2\11\5\0\1\10"+
+    "\1\0\1\11";
 
   private static int [] zzUnpackAction() {
-    int [] result = new int[43];
+    int [] result = new int[44];
     int offset = 0;
     offset = zzUnpackAction(ZZ_ACTION_PACKED_0, offset, result);
     return result;
@@ -227,12 +227,12 @@ class Lexer {
     "\0\0\0\17\0\36\0\55\0\74\0\113\0\132\0\151"+
     "\0\170\0\207\0\226\0\245\0\264\0\303\0\322\0\341"+
     "\0\360\0\377\0\u010e\0\u011d\0\u012c\0\264\0\u013b\0\u014a"+
-    "\0\u0159\0\226\0\17\0\u0168\0\u0177\0\u0186\0\u0195\0\u01a4"+
-    "\0\u01b3\0\226\0\17\0\u01c2\0\u01d1\0\u01e0\0\u01ef\0\u01fe"+
-    "\0\u01c2\0\u020d\0\u01fe";
+    "\0\u0159\0\u0168\0\226\0\17\0\u0177\0\u0186\0\u0195\0\u01a4"+
+    "\0\u01b3\0\u01c2\0\226\0\17\0\u01d1\0\u01e0\0\u01ef\0\u01fe"+
+    "\0\u020d\0\u01d1\0\u021c\0\u020d";
 
   private static int [] zzUnpackRowMap() {
-    int [] result = new int[43];
+    int [] result = new int[44];
     int offset = 0;
     offset = zzUnpackRowMap(ZZ_ROWMAP_PACKED_0, offset, result);
     return result;
@@ -257,31 +257,32 @@ class Lexer {
   private static final String ZZ_TRANS_PACKED_0 =
     "\1\2\2\3\1\4\1\5\1\6\2\2\1\7\2\2"+
     "\1\10\1\11\1\12\1\13\1\2\4\0\11\2\2\0"+
-    "\2\3\17\0\1\4\1\14\7\0\1\15\5\0\1\14"+
-    "\1\5\1\16\7\0\1\17\1\0\1\2\2\0\1\20"+
-    "\1\16\1\21\6\2\1\11\1\2\1\0\1\2\2\22"+
-    "\2\23\1\24\4\2\1\25\3\2\1\0\1\2\2\0"+
-    "\1\20\1\0\7\2\1\11\1\2\1\0\1\2\2\0"+
-    "\1\26\1\0\11\2\1\0\1\2\3\0\1\17\10\2"+
-    "\1\12\23\0\2\14\15\0\1\26\17\0\2\16\15\0"+
-    "\1\17\10\0\1\17\4\0\1\20\10\0\1\15\2\0"+
-    "\1\2\3\0\1\16\1\21\10\2\2\0\2\22\3\23"+
-    "\4\0\1\27\5\0\2\30\2\31\1\23\3\0\1\32"+
-    "\5\0\1\2\2\30\2\31\1\24\3\2\1\33\4\2"+
-    "\1\0\1\2\2\27\2\34\1\35\10\2\2\0\2\27"+
-    "\3\34\12\0\2\30\2\36\4\0\1\32\6\0\2\30"+
-    "\2\31\1\23\1\37\2\0\1\32\6\0\2\40\2\41"+
-    "\1\34\3\0\1\42\5\0\1\2\2\40\2\41\1\35"+
-    "\3\2\1\43\4\2\4\0\2\36\1\0\1\37\17\0"+
-    "\1\44\10\0\2\40\2\45\4\0\1\42\6\0\2\40"+
-    "\2\41\1\34\1\46\2\0\1\42\5\0\1\44\1\0"+
-    "\5\44\1\47\7\44\3\0\2\45\1\0\1\46\17\0"+
-    "\1\50\7\0\1\44\1\30\1\47\4\44\1\47\1\44"+
-    "\1\51\5\44\1\50\1\0\5\50\1\52\10\50\1\40"+
-    "\1\52\4\50\1\52\1\50\1\53\5\50";
+    "\2\3\17\0\1\4\1\5\1\14\6\0\1\15\1\16"+
+    "\4\0\2\5\1\14\7\0\1\16\1\0\1\2\2\0"+
+    "\1\17\1\20\7\2\1\11\1\2\1\0\1\2\2\21"+
+    "\2\22\1\23\4\2\1\24\3\2\1\0\1\2\2\0"+
+    "\1\25\1\0\7\2\1\11\1\2\1\0\1\2\2\0"+
+    "\1\26\1\0\11\2\1\0\1\2\2\0\2\27\11\2"+
+    "\23\0\2\20\15\0\1\26\16\0\2\27\15\0\1\17"+
+    "\1\20\1\14\6\0\1\15\5\0\2\20\1\14\12\0"+
+    "\2\21\3\22\4\0\1\30\5\0\2\31\1\22\1\32"+
+    "\1\22\3\0\1\33\5\0\1\2\2\31\1\22\1\32"+
+    "\1\23\3\2\1\34\4\2\1\0\1\2\2\30\2\35"+
+    "\1\36\10\2\4\0\1\25\10\0\1\15\5\0\2\27"+
+    "\10\0\1\16\2\0\2\30\3\35\12\0\2\31\1\0"+
+    "\1\37\4\0\1\33\6\0\2\31\2\32\1\22\1\40"+
+    "\2\0\1\33\6\0\2\41\1\35\1\42\1\35\3\0"+
+    "\1\43\5\0\1\2\2\41\1\35\1\42\1\36\3\2"+
+    "\1\44\4\2\4\0\2\37\1\0\1\40\17\0\1\45"+
+    "\10\0\2\41\1\0\1\46\4\0\1\43\6\0\2\41"+
+    "\2\42\1\35\1\47\2\0\1\43\5\0\1\45\1\0"+
+    "\5\45\1\50\7\45\3\0\2\46\1\0\1\47\17\0"+
+    "\1\51\7\0\1\45\1\31\1\50\4\45\1\50\1\45"+
+    "\1\52\5\45\1\51\1\0\5\51\1\53\10\51\1\41"+
+    "\1\53\4\51\1\53\1\51\1\54\5\51";
 
   private static int [] zzUnpackTrans() {
-    int [] result = new int[540];
+    int [] result = new int[555];
     int offset = 0;
     offset = zzUnpackTrans(ZZ_TRANS_PACKED_0, offset, result);
     return result;
@@ -319,12 +320,12 @@ class Lexer {
   private static final int [] ZZ_ATTRIBUTE = zzUnpackAttribute();
 
   private static final String ZZ_ATTRIBUTE_PACKED_0 =
-    "\1\0\11\1\1\11\1\1\1\0\4\1\2\0\3\1"+
+    "\1\0\11\1\1\11\1\1\1\0\3\1\2\0\5\1"+
     "\3\0\1\11\1\1\1\0\1\1\4\0\1\11\1\1"+
     "\5\0\1\1\1\0\1\1";
 
   private static int [] zzUnpackAttribute() {
-    int [] result = new int[43];
+    int [] result = new int[44];
     int offset = 0;
     offset = zzUnpackAttribute(ZZ_ATTRIBUTE_PACKED_0, offset, result);
     return result;
@@ -401,10 +402,42 @@ class Lexer {
 
   /* user code: */
   private static ArrayList<String> tagStack = new ArrayList<String>();
+
+   // feels slightly better to declare this string this way. less "magic number-ey"
+   final static String TAGNAMECHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-";
+
+   /* Since tag names can contain hyphens, I need to define this function to check if characters are valid. */
+  private static boolean isTagNameChar(char c){
+      return TAGNAMECHARS.indexOf(c) >= 0;
+  }
   
-  // extracts the tag name out of the tag string
+  /* Extracts the tag name from strings matching the tag regex. We can assume that input
+  into this function is formatted as a tag, becasue it will only be called after matching to a regex.*/
   private static String getTagName(String tag){
-      return "";
+      String name = "";
+
+      int start = 0;
+      int end = 0;
+
+      boolean reading = false;
+
+      for(int i = 0; i < tag.length(); i++){
+         if(!reading){
+            if(isTagNameChar(tag.charAt(i))){ // read in characters until we see a tagname character
+               reading = true; // we start reading, and read until we hit a non-tagname character
+               name = name + tag.charAt(i);
+            }
+         }
+         else{
+            if(!isTagNameChar(tag.charAt(i))){
+               break; // we've seen all the tag name characters, and have hit whitespace or >
+            }
+            else{
+               name = name + tag.charAt(i); // otherwi
+            }
+         }
+      }
+      return name.toUpperCase();
   }
 
    // checks to see if two tags have the same name
@@ -808,17 +841,17 @@ class Lexer {
             // fall through
           case 13: break;
           case 5: 
-            { return new Token(Token.HYPHENATED, yytext(), yyline, yycolumn);
+            { return new Token(Token.ERROR, yytext(), yyline, yycolumn);
             } 
             // fall through
           case 14: break;
           case 6: 
-            { return new Token(Token.APOSTROPHIZED, yytext(), yyline, yycolumn);
+            { return new Token(Token.HYPHENATED, yytext(), yyline, yycolumn);
             } 
             // fall through
           case 15: break;
           case 7: 
-            { return new Token(Token.ERROR, yytext(), yyline, yycolumn);
+            { return new Token(Token.APOSTROPHIZED, yytext(), yyline, yycolumn);
             } 
             // fall through
           case 16: break;
