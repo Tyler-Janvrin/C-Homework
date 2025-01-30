@@ -16,11 +16,24 @@ import java.util.ArrayList;
     
 %eofval{
   //System.out.println("*** Reaching end of file");
+  // prints an error if there are tags still on the stack.
+   if (tagStack.size() > 0){
+      System.err.println("Error: end of file reached but not all tags matched.\n");
+      System.err.println("Tags still on stack:\n");
+      for(int i = 0; i < tagStack.size(); i++){
+         System.err.println(tagStack.get(i) + "\n");   
+      }
+   }
+
   return null;
 %eofval};
 
 %{
+
+   // global stack to hold elements as they are added
   private static ArrayList<String> tagStack = new ArrayList<String>();
+  // variable to keep track of how many "ignore-type" tags are on the stack
+  // we only generate tokens if this is zero (but we still keep track of the stack)
   private static int filterCount = 0;
 
    /* Returns true if we should be ignoring text.*/
@@ -118,11 +131,11 @@ number = {digit}+
    
 /* A letter is anything from A-Z or a-z*/
 letter = [a-zA-Z]
-/* Words can have letters in them, so */
+/* Words can have numbers in them. */
 letternumber = [a-zA-Z0-9]
 word = {letternumber}+
 
-/* A tagname can contain numbers, uppercase, and lowercase letters, and dashes */
+/* A tagname can contain numbers, uppercase, and lowercase letters, and dashes. */
 
 tagnamechar = [-a-zA-Z0-9]
 tagname = {tagnamechar}+
@@ -186,7 +199,7 @@ attvalpair = {letter}{word}*=\".*\"
       }
       else if(name.equals("P")){
          if(!ignoring()){
-            return new Token(Token.CLOSE_P, yytext(), yyline, yycolumn);
+            return new Token(Token.OPEN_P, yytext(), yyline, yycolumn);
          }    
          
       }
@@ -259,37 +272,20 @@ attvalpair = {letter}{word}*=\".*\"
       else{
          // if the name doesn't match, add an error token and don't pop.
          // do this even if tokens are being filtered
-         return new Token(Token.ERROR, yytext(), yyline, yycolumn);
+         System.err.println("ERROR: closing tag " + yytext() + " doesn't match. Skipping.\n");
+         // return new Token(Token.ERROR, yytext(), yyline, yycolumn);
       }
-
-      
-                                                                         }
-/*
-Commenting these out while I work
-"<DOC>"                    { return new Token(Token.OPEN_DOC, yytext(), yyline, yycolumn); }
-"</DOC>"                   { return new Token(Token.CLOSE_DOC, yytext(), yyline, yycolumn); }
-"<TEXT>"                   { return new Token(Token.OPEN_TEXT, yytext(), yyline, yycolumn); }
-"</TEXT>"                  { return new Token(Token.CLOSE_TEXT, yytext(), yyline, yycolumn); }
-"<DATE>"                   { return new Token(Token.OPEN_DATE, yytext(), yyline, yycolumn); }
-"</DATE>"                  { return new Token(Token.CLOSE_DATE, yytext(), yyline, yycolumn); }
-"<DOCNO>"                  { return new Token(Token.OPEN_DOCNO, yytext(), yyline, yycolumn); }
-"</DOCNO>"                 { return new Token(Token.CLOSE_DOCNO, yytext(), yyline, yycolumn); }
-"<HEADLINE>"               { return new Token(Token.OPEN_HEADLINE, yytext(), yyline, yycolumn); }
-"</HEADLINE>"              { return new Token(Token.CLOSE_HEADLINE, yytext(), yyline, yycolumn); }
-"<LENGTH>"                 { return new Token(Token.OPEN_LENGTH, yytext(), yyline, yycolumn); }
-"</LENGTH>"                { return new Token(Token.CLOSE_LENGTH, yytext(), yyline, yycolumn); }
-*/
-
+}
 
 // there's a special case here for number - that's to recognize numbers of the form .1234, which in my opinion is a valid number 
-(("+"|"-")?{number}+("."{number}+)?)|(("+"|"-")?"."{number}+)           { if (!ignoring()){return new Token(Token.NUMBER, yytext(), yyline, yycolumn);} }
+(("+"|"-")?{number}+("."{number}+)?)|(("+"|"-")?"."{number}+)                 { if (!ignoring()){return new Token(Token.NUMBER, yytext(), yyline, yycolumn);} }
 
 // this is long and complicated to deal with the fact that you could have things like -word- or word-word-, but not word---word
-'?{word}'({word}')*({word}'|{word})?|('{word}|{word})?('{word})*'{word}'?              { if(!ignoring()){return new Token(Token.APOSTROPHIZED, yytext(), yyline, yycolumn);} }
--?{word}-({word}-)*({word}-|{word})?|(-{word}|{word})?(-{word})*-{word}-?                   { if(!ignoring()){return new Token(Token.HYPHENATED, yytext(), yyline, yycolumn); }}
-{word}                             {if(!ignoring()){ return new Token(Token.WORD, yytext(), yyline, yycolumn); }} 
+'?{word}'({word}')*({word}'|{word})?|('{word}|{word})?('{word})*'{word}'?     { if(!ignoring()){return new Token(Token.APOSTROPHIZED, yytext(), yyline, yycolumn);} }
+-?{word}-({word}-)*({word}-|{word})?|(-{word}|{word})?(-{word})*-{word}-?     { if(!ignoring()){return new Token(Token.HYPHENATED, yytext(), yyline, yycolumn); }}
+{word}                                                                        {if(!ignoring()){ return new Token(Token.WORD, yytext(), yyline, yycolumn); }} 
 // putting word after number, because words can have numbers in but numbers can't have letters
-[^\w\s]+                                     { if(!ignoring()){ return new Token(Token.PUNCTUATION, yytext(), yyline, yycolumn); }}
-{ws}+                                        { /* skip whitespace */ }   
+[^\w\s]                                                                      { if(!ignoring()){ return new Token(Token.PUNCTUATION, yytext(), yyline, yycolumn); }}
+{ws}+                                                                         { /* skip whitespace */ }   
 // "{"[^\}]*"}"       { /* skip comments */ } // don't skip comments
-.                                            {if(!ignoring()){ return new Token(Token.ERROR, yytext(), yyline, yycolumn); }} // all other characters are ERRORs
+.                                                                             {if(!ignoring()){ return new Token(Token.ERROR, yytext(), yyline, yycolumn); }} // all other characters are ERRORs

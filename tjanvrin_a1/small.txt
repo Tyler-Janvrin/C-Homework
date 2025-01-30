@@ -9,14 +9,24 @@ Here are some tags:
 < / lEnGTH ></HEADLINE></docno></dATE>
 
 <text>
-and now, some more text. 
+and now, Some More teXt. 
+
+<p>
+    a paragraph
+</p>
 
 some irrelevant tags:
 <fool>
 <water>
 dog cat frog this text should be ignored 123.456 -cattle- o'malley
+
+<p>
+    a hidden paragraph
+</p>
 </water>
-</fool>
+</fool attr2="the format for attributes looks like this ....12321." >
+
+teXt123  wi456th 789NumbeRs
 
 <paste>
 <tower>
@@ -24,7 +34,7 @@ dog cat frog this text should be ignored 123.456 -cattle- o'malley
 </tower>
 </paste>
 
-Apostrophized and hyphenated:
+Hyphenated:
 -one
 two-
 three-four
@@ -34,7 +44,19 @@ nine-ten-Eleven
 -tweleve-thirteen-fourteen
 fifteen-sixteen-seventeen-
 -eighteen-nineteen-twenety-twentyone
----not---apostrophized---
+---not---hyphenated---
+
+Apostrophized:
+'abc
+def'
+hi'jk
+'lmn'o
+p'q'r
+st'uv'wx
+'dog'cat'frog
+frog'cat'horse
+'all'done'with'apostrophes
+'''not'''apostrophized
 
 Some numbers: 12345678910 -12.49808349023 +18.094290 .123 .
 
