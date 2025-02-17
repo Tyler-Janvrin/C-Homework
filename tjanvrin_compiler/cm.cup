@@ -73,28 +73,299 @@ parser code {:
 /* ------------Declaration of Terminals and Non Terminals Section----------- */
    
 terminal BOOL, ELSE, IF, INT, RETURN, VOID, WHILE, FALSE, TRUE;
-terminal PLUS, MINUS, TIMES, DIV, LT, LE, GT, GE, EQ, NE, BITNOT, OR, AND, ASSIGN, SEMI, COMMA, LP, RP, LB, RB, LC, RC;
-terminal String ID, NUM, TRUTH;
+terminal PLUS, MINUS, TIMES, DIV, LT, LE, GT, GE, EQ, NE, BITNOT, OR, AND, ASSIGN, SEMI, COMMA, LP, RP, LB, RB, LC, RC, UMINUS;
+terminal String ID, NUM;
 terminal ERROR;
 
 // abstract classes:
-// var, exp, dec, vardec, 
+// Var, Exp, Dec, VarDec
+// misc classes
+// DecList, VarDecList, ExpList
 
-non terminal ExpList program
+non terminal DecList dec_list;
+non terminal Dec dec, fun_dec, fun_proto;
+non terminal VarDec var_dec, param;
+non terminal VarDecList params, param_list, local_decs;
+non terminal NameTy type_spec;
+non terminal Exp compound_stmt, statement, expression_stmt, selection_stmt, iteration_stmt, return_stmt;
+non terminal Exp expression, bool_expression, simple_expression, arith_expression;
+non terminal Exp call;
+non terminal ExpList args, arg_list;
+non terminal ExpList statement_list;
+non terminal Var var;
+non terminal int relop, arithop, truth;
 
-// pre-defined statements
-   
+
+non terminal ExpList program;
+
 non terminal Exp program1;
-non terminal ExpList program, stmt_seq;
-non terminal Exp stmt, if_stmt, repeat_stmt, assign_stmt, read_stmt, write_stmt;
-non terminal Exp exp, simple_exp, term, signed_factor, factor;   
+
+
+/* Precedence declarations */
+precedence left OR;
+precedence left AND;
+precedence left BITNOT;
+precedence nonassoc EQ, NE;
+precedence left PLUS, MINUS;
+precedence left TIMES, DIV;
+precedence right UMINUS;
 
 /* ----------------------------Grammar Section-------------------- */
    
 start with program;
 
-program1     ::= exp:e 
-                 {: RESULT = e; :}
+program1     ::= expression:e 
+                 {: :}
                ;
 
-program       ::= dec_list
+// 1
+program       ::= dec_list:dl
+                  {: :}
+                  ;
+
+// 2
+dec_list       ::= dec_list:dl dec:d
+                  {: :}
+                  |
+                  dec:d
+                  {: :}
+                  ;
+
+// 3
+dec            ::= var_dec:v  {: :}
+                  | fun_dec:f  {: :}
+                  | fun_proto:f  {: :}
+                  ;
+
+// 4           
+var_dec        ::= type_spec:t ID:i SEMI {: :}
+               |  type_spec:t ID:i LB NUM:n RB SEMI {: :}
+               ;
+
+// 5
+type_spec      ::= BOOL {: :}
+               | INT {: :}
+               | VOID {: :}
+               ;
+
+// 6
+fun_dec        ::= type_spec:t ID:i LP params:p RP compound_stmt:c
+                  {: :}
+               ;
+
+// 7
+fun_proto      ::= type_spec:t ID:i LP params:p RP SEMI
+                  {: :}
+               ;
+
+// 8
+params         ::= param_list:pl {: :}
+               | VOID {: :}
+               ;
+
+// 9 
+param_list     ::= param_list:pl COMMA param:p
+                  {: :}
+               |
+               param:p {: :}
+               ;
+
+// 10
+param          ::= type_spec:t ID:i {: :}
+               | type_spec:t ID:i LB RB
+                  {: :}
+               ;
+
+// 11
+compound_stmt  ::= LC local_decs:l statement_list:s RC
+                  {: :}
+               ;
+
+// 12
+local_decs     ::= local_decs:l var_dec:v
+                  {: :}
+               |
+                  {: :}
+               ;
+
+// 13
+statement_list ::= statement_list:sl statement:s
+                  {: :}
+               | 
+                  {: :}
+               ;
+
+// 14
+statement      ::= expression_stmt:e 
+                  {: :}
+               |
+                  compound_stmt:c
+                  {: :}
+               |
+                  selection_stmt:s
+                  {: :}
+               |
+                  iteration_stmt:i
+                  {: :}
+               |
+                  return_stmt:r
+                  {: :}
+               ;
+
+// 15
+expression_stmt   ::= 
+                  expression:e SEMI
+                     {: :}
+                  |
+                  SEMI
+                     {: :}
+                  ;
+
+// 16
+selection_stmt ::= 
+                  IF LP expression:e RP statement:s
+                     {: :}
+                  |
+                  IF LP expression:e RP statement:s1 ELSE statement:s2
+                     {: :}
+                  ;
+
+// 17
+iteration_stmt ::=
+                  WHILE LP expression:e RP statement:s1
+                  {: :}
+               ;
+
+// 18
+return_stmt ::=
+               RETURN expression:e SEMI 
+                  {: :}
+               |
+               RETURN SEMI
+                  {: :}
+               ;
+
+// 19
+expression ::= 
+               var:v ASSIGN expression:e
+                  {: :}
+               |
+               bool_expression:b
+                  {: :}
+               ;
+
+// 20
+var         ::=
+               ID:i {: :}
+            |
+               ID:i LB expression:e RB
+               {: :}
+            ;
+
+// here's where it gets tricky... I'm not 100% sure how to do this
+
+// 21 // make sure you set priority correctly
+bool_expression   ::=
+                     bool_expression:b1 OR bool_expression:b2
+                     {: :}
+                  |
+                     bool_expression:b1 AND bool_expression:b2
+                     {: :}
+                  |
+                     BITNOT bool_expression:b
+                     {: :}
+                  |
+                     simple_expression:s
+                     {: :}
+                  ;
+
+// 22
+simple_expression ::= 
+                     arith_expression:a1 relop:r arith_expression:a2
+                        {: :}
+                     ;
+
+// 23
+relop             ::=
+                     LE {: :}
+                  |
+                     LT {: :}
+                  |
+                     GT {: :}
+                  |
+                     GE {: :}
+                  |
+                     EQ {: :}
+                  |
+                     NE {: :}
+                  ;
+
+// 24
+arith_expression  ::=
+                     arith_expression:a1 arithop:o arith_expression:a2
+                        {: :}
+                     |
+                     MINUS:m arith_expression:a1 
+                        {: :} %prec UMINUS
+                     |
+                     LP arith_expression:a RP
+                        {: :}
+                     |
+                     var:v
+                        {: :}
+                     |
+                     call:c
+                        {: :}
+                     |
+                        NUM:n
+                        {: :}
+                     |
+                        truth:t
+                        {: :}
+                     ;
+
+// 25
+arithop        ::=
+                  PLUS {: :}
+               |
+                  MINUS {: :}
+               |
+                  TIMES {: :}
+               |
+                  DIV {: :}
+               ;
+
+// 26
+call           ::=
+                  ID:i LP args:a RP
+                  {: :}
+               ;
+
+// 27
+args           ::=
+                  arg_list:a
+                  {: :}
+               |
+                  {: :}
+               ;
+
+// 28
+arg_list       ::=
+                  arg_list:a COMMA expression:e 
+                     {: :}
+               |
+                  expression:e
+               ;
+
+// 29
+truth          ::=
+                  TRUE {: :}
+               |
+                  FALSE {: :}
+               ;
+
+
+
+
+
+
