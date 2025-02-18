@@ -6,52 +6,78 @@
 /** CUP generated class containing symbol constants. */
 public class sym {
   /* terminals */
-  public static final int TIMES = 16;
-  public static final int READ = 8;
-  public static final int OVER = 17;
-  public static final int LT = 12;
-  public static final int ELSE = 4;
-  public static final int PLUS = 14;
-  public static final int RPAREN = 19;
-  public static final int THEN = 3;
-  public static final int SEMI = 20;
-  public static final int END = 5;
-  public static final int ERROR = 23;
-  public static final int IF = 2;
-  public static final int LPAREN = 18;
-  public static final int GT = 13;
-  public static final int ID = 21;
-  public static final int WRITE = 9;
-  public static final int NUM = 22;
+  public static final int GE = 18;
+  public static final int UMINUS = 33;
+  public static final int SEMI = 25;
+  public static final int INT = 5;
+  public static final int MINUS = 12;
+  public static final int AND = 23;
+  public static final int LT = 15;
+  public static final int LP = 27;
+  public static final int OR = 22;
+  public static final int BOOL = 2;
+  public static final int COMMA = 26;
+  public static final int DIV = 14;
+  public static final int RP = 28;
+  public static final int NUM = 35;
+  public static final int PLUS = 11;
+  public static final int ASSIGN = 24;
+  public static final int IF = 4;
+  public static final int ID = 34;
+  public static final int LE = 16;
   public static final int EOF = 0;
-  public static final int MINUS = 15;
+  public static final int LC = 31;
+  public static final int LB = 29;
+  public static final int RETURN = 6;
+  public static final int TRUE = 10;
   public static final int error = 1;
-  public static final int UNTIL = 7;
-  public static final int ASSIGN = 10;
-  public static final int EQ = 11;
-  public static final int REPEAT = 6;
+  public static final int RC = 32;
+  public static final int RB = 30;
+  public static final int VOID = 7;
+  public static final int EQ = 19;
+  public static final int ERROR = 36;
+  public static final int TIMES = 13;
+  public static final int ELSE = 3;
+  public static final int WHILE = 8;
+  public static final int NE = 20;
+  public static final int BITNOT = 21;
+  public static final int FALSE = 9;
+  public static final int GT = 17;
   public static final String[] terminalNames = new String[] {
   "EOF",
   "error",
-  "IF",
-  "THEN",
+  "BOOL",
   "ELSE",
-  "END",
-  "REPEAT",
-  "UNTIL",
-  "READ",
-  "WRITE",
-  "ASSIGN",
-  "EQ",
-  "LT",
-  "GT",
+  "IF",
+  "INT",
+  "RETURN",
+  "VOID",
+  "WHILE",
+  "FALSE",
+  "TRUE",
   "PLUS",
   "MINUS",
   "TIMES",
-  "OVER",
-  "LPAREN",
-  "RPAREN",
+  "DIV",
+  "LT",
+  "LE",
+  "GT",
+  "GE",
+  "EQ",
+  "NE",
+  "BITNOT",
+  "OR",
+  "AND",
+  "ASSIGN",
   "SEMI",
+  "COMMA",
+  "LP",
+  "RP",
+  "LB",
+  "RB",
+  "LC",
+  "RC",
+  "UMINUS",
   "ID",
   "NUM",
   "ERROR"

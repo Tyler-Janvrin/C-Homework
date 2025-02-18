@@ -88,13 +88,11 @@ non terminal VarDec var_dec, param;
 non terminal VarDecList params, param_list, local_decs;
 non terminal NameTy type_spec;
 non terminal Exp compound_stmt, statement, expression_stmt, selection_stmt, iteration_stmt, return_stmt;
-non terminal Exp expression, bool_expression, simple_expression, arith_expression;
+non terminal Exp expression, bool_expression, simple_expression, arith_expression, factor;
 non terminal Exp call;
 non terminal ExpList args, arg_list;
 non terminal ExpList statement_list;
 non terminal Var var;
-non terminal int relop, arithop, truth;
-
 
 non terminal ExpList program;
 
@@ -104,7 +102,7 @@ non terminal Exp program1;
 /* Precedence declarations */
 precedence left OR;
 precedence left AND;
-precedence left BITNOT;
+precedence right BITNOT;
 precedence nonassoc EQ, NE;
 precedence left PLUS, MINUS;
 precedence left TIMES, DIV;
@@ -281,31 +279,49 @@ bool_expression   ::=
 
 // 22
 simple_expression ::= 
-                     arith_expression:a1 relop:r arith_expression:a2
+                     arith_expression:a1 LE arith_expression:a2
+                        {: :}
+                     |
+                     arith_expression:a1 LT arith_expression:a2
+                        {: :}
+                     |
+                     arith_expression:a1 GE arith_expression:a2
+                        {: :}
+                     |
+                     arith_expression:a1 GT arith_expression:a2
+                        {: :}
+                     |
+                     arith_expression:a1 EQ arith_expression:a2
+                        {: :}
+                     |
+                     arith_expression:a1 NE arith_expression:a2
+                        {: :}
+                     |
+                     arith_expression:a
                         {: :}
                      ;
 
 // 23
-relop             ::=
-                     LE {: :}
-                  |
-                     LT {: :}
-                  |
-                     GT {: :}
-                  |
-                     GE {: :}
-                  |
-                     EQ {: :}
-                  |
-                     NE {: :}
-                  ;
-
-// 24
 arith_expression  ::=
-                     arith_expression:a1 arithop:o arith_expression:a2
+                     arith_expression:a1 PLUS arith_expression:a2
                         {: :}
                      |
-                     MINUS:m arith_expression:a1 
+                     arith_expression:a1 MINUS arith_expression:a2
+                        {: :}
+                     |
+                     arith_expression:a1 TIMES arith_expression:a2
+                        {: :}
+                     |
+                     arith_expression:a1 DIV arith_expression:a2
+                        {: :}
+                     |
+                     factor:f
+                        {: :}
+                     ;
+
+// 24
+factor            ::=
+                     MINUS:m factor:a1 
                         {: :} %prec UMINUS
                      |
                      LP arith_expression:a RP
@@ -320,28 +336,20 @@ arith_expression  ::=
                         NUM:n
                         {: :}
                      |
-                        truth:t
+                        TRUE
+                        {: :}
+                     |
+                        FALSE
                         {: :}
                      ;
 
 // 25
-arithop        ::=
-                  PLUS {: :}
-               |
-                  MINUS {: :}
-               |
-                  TIMES {: :}
-               |
-                  DIV {: :}
-               ;
-
-// 26
 call           ::=
                   ID:i LP args:a RP
                   {: :}
                ;
 
-// 27
+// 26
 args           ::=
                   arg_list:a
                   {: :}
@@ -349,23 +357,13 @@ args           ::=
                   {: :}
                ;
 
-// 28
+// 27
 arg_list       ::=
                   arg_list:a COMMA expression:e 
                      {: :}
                |
                   expression:e
                ;
-
-// 29
-truth          ::=
-                  TRUE {: :}
-               |
-                  FALSE {: :}
-               ;
-
-
-
 
 
 

@@ -1,0 +1,12 @@
+/* The simplest program I could think of. We'll start here and gradually build up */
+
+void main(void){
+    int x;
+    int y;
+
+    x;
+
+    x = func();
+
+    return x + y;
+}

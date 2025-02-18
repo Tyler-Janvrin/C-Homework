@@ -51,17 +51,26 @@ public class ShowTreeVisitor implements AbsynVisitor {
       case OpExp.TIMES:
         System.out.println( " * " );
         break;
-      case OpExp.OVER:
+      case OpExp.DIV:
         System.out.println( " / " );
         break;
       case OpExp.EQ:
         System.out.println( " = " );
         break;
+      case OpExp.NE:
+        System.out.println( " = " );
+        break;
       case OpExp.LT:
         System.out.println( " < " );
         break;
+      case OpExp.LE:
+        System.out.println( " <= " );
+        break;
       case OpExp.GT:
         System.out.println( " > " );
+        break;
+      case OpExp.GE:
+        System.out.println( " >= " );
         break;
       case OpExp.UMINUS:
         System.out.println( " - " );
@@ -99,6 +108,21 @@ public class ShowTreeVisitor implements AbsynVisitor {
   public void visit( VarExp exp, int level ) {
     indent( level );
     System.out.println( "VarExp: " + exp.name );
+  }
+
+  public void visit (DecList decList, int level){
+    indent( level );
+    System.out.println("DecList:" + "Incomplete - Fill in later");
+  }
+
+  public void visit (VarDecList varList, int level){
+    indent( level );
+    System.out.println("VarDecList:" + "Incomplete - Fill in later");
+  }
+
+  public void visit (BoolExp exp, int level){
+    indent( level );
+    System.out.println("BoolExp:" + "Incomplete - Fill in later");
   }
 
   /* 

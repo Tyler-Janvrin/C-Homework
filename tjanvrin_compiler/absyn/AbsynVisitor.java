@@ -18,6 +18,11 @@ public interface AbsynVisitor {
 
   public void visit( VarExp exp, int level );
 
+  public void visit( DecList decList, int level );
+
+  public void visit( VarDecList varDecList, int level );
+  
+  public void visit( BoolExp exp, int level);
   // public void visit( WriteExp exp, int level );
 
 }
