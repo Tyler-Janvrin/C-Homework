@@ -55,10 +55,10 @@ public class ShowTreeVisitor implements AbsynVisitor {
         System.out.println( " / " );
         break;
       case OpExp.EQ:
-        System.out.println( " = " );
+        System.out.println( " == " );
         break;
       case OpExp.NE:
-        System.out.println( " = " );
+        System.out.println( " != " );
         break;
       case OpExp.LT:
         System.out.println( " < " );
@@ -74,6 +74,15 @@ public class ShowTreeVisitor implements AbsynVisitor {
         break;
       case OpExp.UMINUS:
         System.out.println( " - " );
+        break;
+      case OpExp.BITNOT:
+        System.out.println( " ~ " );
+        break;
+      case OpExp.AND:
+        System.out.println( " && " );
+        break;
+      case OpExp.OR:
+      System.out.println( " || " );
         break;
       default:
         System.out.println( "Unrecognized operator at line " + exp.row + " and column " + exp.col);
@@ -107,7 +116,9 @@ public class ShowTreeVisitor implements AbsynVisitor {
 
   public void visit( VarExp exp, int level ) {
     indent( level );
-    System.out.println( "VarExp: " + exp.name );
+    System.out.println( "VarExp: " );
+    level++;
+    exp.variable.accept( this, level);
   }
 
   public void visit (DecList decList, int level){
@@ -123,6 +134,38 @@ public class ShowTreeVisitor implements AbsynVisitor {
   public void visit (BoolExp exp, int level){
     indent( level );
     System.out.println("BoolExp:" + "Incomplete - Fill in later");
+  }
+
+  public void visit (SimpleVar variable, int level){
+    indent( level );
+    System.out.println("SimpleVar: " + variable.name);
+  }
+
+  public void visit(IndexVar variable, int level){
+    indent( level);
+    System.out.println("IndexVar: " + variable.name);
+    level++;
+    variable.index.accept(this, level);
+  }
+
+  public void visit( ReturnExp exp, int level ) {
+    indent( level );
+    System.out.println( "ReturnExp: " );
+    level++;
+    exp.exp.accept( this, level);
+  }
+
+  public void visit( WhileExp exp, int level ) {
+    indent( level );
+    System.out.println( "WhileExp: " );
+    level++;
+    exp.test.accept( this, level);
+    exp.body.accept( this, level);
+  }
+
+
+  public void visit(NilExp exp, int level){
+    // do nothing! easy. 
   }
 
   /* 

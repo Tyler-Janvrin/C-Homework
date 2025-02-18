@@ -1,12 +1,10 @@
 package absyn;
 
-public class VarExp extends Exp {
-  public Var variable;
+public class NilExp extends Exp {
 
-  public VarExp( int row, int col, Var variable ) {
+  public NilExp( int row, int col ) {
     this.row = row;
     this.col = col;
-    this.variable = variable;
   }
 
   public void accept( AbsynVisitor visitor, int level ) {

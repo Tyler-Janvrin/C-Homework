@@ -1,12 +1,5 @@
 /* The simplest program I could think of. We'll start here and gradually build up */
 
-void main(void){
-    int x;
-    int y;
+/* ~ x == y || y != z && frog */
 
-    x;
-
-    x = func();
-
-    return x + y;
-}
+while (name == tyler) return true;
