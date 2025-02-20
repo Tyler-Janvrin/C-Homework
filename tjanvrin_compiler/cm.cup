@@ -94,9 +94,9 @@ non terminal ExpList args, arg_list;
 non terminal ExpList statement_list;
 non terminal VarExp var;
 
-non terminal ExpList program;
+non terminal DecList program;
 
-non terminal Exp program1;
+non terminal Dec program1;
 
 
 /* Precedence declarations */
@@ -110,87 +110,123 @@ precedence right UMINUS;
 
 /* ----------------------------Grammar Section-------------------- */
    
-start with program1;
+start with program;
 
-program1     ::= statement:s 
+program1     ::= dec:s 
                  {: RESULT = s; :}
                ;
 
 // 1
 program       ::= dec_list:dl
-                  {: :}
+                  {: RESULT = dl; :}
                   ;
 
 // 2
 dec_list       ::= dec_list:dl dec:d
-                  {: :}
+                  {: 
+                     DecList t = dl;
+                     while(t.tail != null){
+                        t = t.tail;
+                     }
+                     t.tail = new DecList(d, null);
+                     RESULT = dl;
+                  :}
                   |
                   dec:d
-                  {: :}
+                  {: 
+                     RESULT = new DecList(d, null);
+                  :}
                   ;
 
 // 3
-dec            ::= var_dec:v  {: :}
-                  | fun_dec:f  {: :}
-                  | fun_proto:f  {: :}
+dec            ::= var_dec:v  {: RESULT = v; :}
+                  | fun_dec:f  {: RESULT = f; :}
+                  | fun_proto:f  {: RESULT = f; :}
                   ;
 
 // 4           
-var_dec        ::= type_spec:t ID:i SEMI {: :}
-               |  type_spec:t ID:i LB NUM:n RB SEMI {: :}
+var_dec        ::= type_spec:t ID:i SEMI 
+                  {: RESULT = new SimpleDec(tleft, tright, t, i); :}
+               |  type_spec:t ID:i LB NUM:n RB SEMI 
+                  {: RESULT = new ArrayDec(tleft, tright, t, i, new IntExp(nleft, nright, n) ); :}
                ;
 
 // 5
-type_spec      ::= BOOL {: :}
-               | INT {: :}
-               | VOID {: :}
+type_spec      ::= BOOL:b {: RESULT = new NameTy(bleft, bright, NameTy.BOOL); :}
+               | INT:i {: RESULT = new NameTy(ileft, iright, NameTy.INT); :}
+               | VOID:v {: RESULT = new NameTy(vleft, vright, NameTy.VOID); :}
                ;
 
 // 6
 fun_dec        ::= type_spec:t ID:i LP params:p RP compound_stmt:c
-                  {: :}
+                  {: RESULT = new FunctionDec(ileft, iright, t, i, p, c); :}
                ;
 
 // 7
 fun_proto      ::= type_spec:t ID:i LP params:p RP SEMI
-                  {: :}
+                  {: RESULT = new FunctionDec(ileft, iright, t, i, p, new NilExp(ileft, iright)); :}
                ;
 
 // 8
-params         ::= param_list:pl {: :}
-               | VOID {: :}
+params         ::= param_list:pl {: RESULT = pl; :}
+               | VOID {: RESULT = new VarDecList(new NilVarDec(0, 0), null); :}
                ;
 
 // 9 
 param_list     ::= param_list:pl COMMA param:p
-                  {: :}
+                  {:
+                     VarDecList t = pl;
+                     while(t.tail != null){
+                        t = t.tail;
+                     }
+                     t.tail = new VarDecList(p, null);
+                     RESULT = pl;
+                  :}
                |
-               param:p {: :}
+               param:p {:
+                  RESULT = new VarDecList(p, null);
+               :}
                ;
 
 // 10
-param          ::= type_spec:t ID:i {: :}
+param          ::= type_spec:t ID:i 
+                  {: RESULT = new SimpleDec(tleft, tright, t, i); :}
                | type_spec:t ID:i LB RB
-                  {: :}
+               /* Not 100% sure that I'm using the right declaration here, but there's no int for size. */
+                  {: RESULT = new SimpleDec(tleft, tright, t, i); :}
                ;
 
 // 11
 compound_stmt  ::= LC local_decs:l statement_list:s RC
-                  {: :}
+                  {: RESULT = new CompoundExp(lleft, lright, l, s); :}
                ;
 
 // 12
 local_decs     ::= local_decs:l var_dec:v
-                  {: :}
+                  {:
+                     VarDecList t = l;
+                     while(t.tail != null){
+                        t = t.tail;
+                     }
+                     t.tail = new VarDecList(v, null);
+                     RESULT = l;
+                  :}
                |
-                  {: :}
+                  {: RESULT = new VarDecList(new NilVarDec(0,0), null); :}
                ;
 
 // 13
 statement_list ::= statement_list:sl statement:s
-                  {: :}
+                  {:
+                     ExpList t = sl;
+                     while (t.tail != null){
+                        t = t.tail;
+                     }
+                     t.tail = new ExpList(s, null);
+                     RESULT = sl;
+                  :}
                | 
-                  {: :}
+                  {: RESULT = new ExpList(new NilExp(0,0), null); :}
                ;
 
 // 14
@@ -213,19 +249,19 @@ statement      ::= expression_stmt:e
 // 15
 expression_stmt   ::= 
                   expression:e SEMI
-                     {: :}
+                     {: RESULT = e; :}
                   |
-                  SEMI
-                     {: :}
+                  SEMI:s
+                     {: RESULT = new NilExp(sleft, sright); :}
                   ;
 
 // 16
 selection_stmt ::= 
                   IF LP expression:e RP statement:s
-                     {: :}
+                     {: RESULT = new IfExp(eleft, eright, e, s, new NilExp(sleft, sright)); :}
                   |
                   IF LP expression:e RP statement:s1 ELSE statement:s2
-                     {: :}
+                     {: RESULT = new IfExp(eleft, eright, e, s1, s2); :}
                   ;
 
 // 17
@@ -346,23 +382,31 @@ factor            ::=
 // 25
 call           ::=
                   ID:i LP args:a RP
-                  {: :}
+                  {: RESULT = new CallExp(ileft, iright, i, a); :}
                ;
 
 // 26
 args           ::=
                   arg_list:a
-                  {: :}
+                  {: RESULT = a; :}
                |
-                  {: :}
+                  {: RESULT = new ExpList(new NilExp(0,0), null); :}
                ;
 
 // 27
 arg_list       ::=
                   arg_list:a COMMA expression:e 
-                     {: :}
+                     {:
+                        ExpList t = a;
+                        while(t.tail != null){
+                           t = t.tail;
+                        }
+                        t.tail = new ExpList(e, null);
+                        RESULT = a;
+                     :}
                |
                   expression:e
+                  {: RESULT = new ExpList(e, null); :}
                ;
 
 

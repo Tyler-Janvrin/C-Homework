@@ -32,7 +32,25 @@ public interface AbsynVisitor {
 
   public void visit( NilExp exp, int level);
 
+  public void visit( NilDec dec, int level);
+
+  public void visit( NilVarDec dec, int level);
+
+  public void visit( CompoundExp dec, int level);
+
   public void visit (WhileExp exp, int level);
+
+  public void visit (SimpleDec dec, int level);
+  
+  public void visit (ArrayDec dec, int level);
+
+  public void visit(NameTy name, int level);
+
+  public void visit(FunctionDec dec, int level);
+
+  public void visit(CallExp exp, int level);
+
+
   // public void visit( WriteExp exp, int level );
 
 }

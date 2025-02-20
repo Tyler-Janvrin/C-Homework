@@ -2,4 +2,33 @@
 
 /* ~ x == y || y != z && frog */
 
-while (name == tyler) return true;
+/*
+{int x[ 123 ];
+int y;
+int z;
+int q[456];
+
+x = y;
+if ( true ) x = 3; else x = 4;
+
+}
+*/
+
+int dog(int x, int y, bool b){
+    int a;
+    int b;
+    
+    a = 5;
+    b = 10;
+}
+
+int pig;
+
+int cat(int x, int y[]){
+    int frog;
+    int horse;
+
+    horse = horse + frog;
+
+    horse = dog(true);
+}
