@@ -193,7 +193,7 @@ param          ::= type_spec:t ID:i
                   {: RESULT = new SimpleDec(tleft, tright, t, i); :}
                | type_spec:t ID:i LB RB
                /* Not 100% sure that I'm using the right declaration here, but there's no int for size. */
-                  {: RESULT = new SimpleDec(tleft, tright, t, i); :}
+                  {: RESULT = new ArrayDec(tleft, tright, t, i, new IntExp(tleft, tright, "0")); :}
                ;
 
 // 11
