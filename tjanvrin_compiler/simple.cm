@@ -14,6 +14,8 @@ if ( true ) x = 3; else x = 4;
 }
 */
 
+int qudzu;
+
 int dog(int x, int y, bool b){
     int a;
     int b;
