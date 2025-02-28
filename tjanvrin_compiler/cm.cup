@@ -112,9 +112,11 @@ precedence right UMINUS;
    
 start with program;
 
+/*
 program1     ::= dec:s 
                  {: RESULT = s; :}
                ;
+*/
 
 // 1
 program       ::= dec_list:dl
@@ -253,6 +255,12 @@ expression_stmt   ::=
                   |
                   SEMI:s
                      {: RESULT = new NilExp(sleft, sright); :}
+                  |
+                  error SEMI:s
+                     {: 
+                        parser.report_error("invalid expression", s);
+                        RESULT = new NilExp(sleft, sright);
+                     :}
                   ;
 
 // 16
@@ -362,6 +370,12 @@ factor            ::=
                      |
                      LP arith_expression:a RP
                         {: RESULT = a; :}
+                     |
+                     LP error:e RP
+                     {:   
+                        parser.report_error("Invalid arithmetic expression within parentheses", e); 
+                        RESULT = new NilExp(eleft, eright); 
+                     :}
                      |
                      var:v
                         {: RESULT = v; :}

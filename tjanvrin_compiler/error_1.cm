@@ -1,0 +1,22 @@
+/* The simplest program I could think of. We'll start here and gradually build up */
+
+/* ~ x == y || y != z && frog */
+
+/*
+{int x[ 123 ];
+int y;
+int z;
+int q[456];
+
+x = y;
+if ( true ) x = 3; else x = 4;
+
+}
+*/
+
+int qudzu;
+
+int dog(int x, int y, bool b){
+    a = 5 - (dog cat);
+    b = 10;
+}
