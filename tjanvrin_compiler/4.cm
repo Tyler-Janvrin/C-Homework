@@ -1,0 +1,35 @@
+/* 
+If I encounter an error in an if statement, I assume that the value being checked is false.
+Not sure if that's correct, but it's what I decided on. I made this choice because I
+didn't like making it a NilExp.
+
+ */
+
+int dog(int x, int y, bool b){
+    int one;
+    int two;
+    int three;
+
+    if (1 == 2 && * + 3 == 4){
+        int x;
+
+        x = x + 1;
+        output(x);
+    }
+
+    while( dog frog horse cat){
+        x = x + 1;
+    }
+
+    /*
+    if( * 1 == true){
+        x = 1;
+    }
+    else{
+        x = 2;
+    }
+    */
+
+    return aaa eee ooo;
+
+}

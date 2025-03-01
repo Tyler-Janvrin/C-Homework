@@ -1,0 +1,15 @@
+/* 
+If I encounter an error in an if statement, I assume that the value being checked is false.
+Not sure if that's correct, but it's what I decided on. I made this choice because I
+didn't like making it a NilExp.
+
+ */
+
+void function(int dog int cat int frog);
+
+int start;
+
+int array[not_a_number];
+int array[6 + some stuff];
+
+int end;

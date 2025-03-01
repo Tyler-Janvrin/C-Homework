@@ -138,6 +138,12 @@ dec_list       ::= dec_list:dl dec:d
                   {: 
                      RESULT = new DecList(d, null);
                   :}
+                  |
+                  error:e
+                  {: 
+                     parser.report_error("Invalid DEC", null);
+                     RESULT = new DecList(new NilDec(eleft, eright), null);
+                  :}
                   ;
 
 // 3
@@ -149,8 +155,34 @@ dec            ::= var_dec:v  {: RESULT = v; :}
 // 4           
 var_dec        ::= type_spec:t ID:i SEMI 
                   {: RESULT = new SimpleDec(tleft, tright, t, i); :}
-               |  type_spec:t ID:i LB NUM:n RB SEMI 
+               |  
+               type_spec:t ID:i error:e SEMI 
+                  {: 
+                     parser.report_error("error in variable declaration", null);
+                     RESULT = new SimpleDec(tleft, tright, t, i); 
+                  :}
+               |  
+                  type_spec:t ID:i LB NUM:n RB SEMI 
                   {: RESULT = new ArrayDec(tleft, tright, t, i, new IntExp(nleft, nright, n) ); :}
+               |
+               type_spec:t ID:i LB NUM:n error:e RB SEMI 
+                  {: 
+                     parser.report_error("non_num value in array declaration", null);
+                     RESULT = new ArrayDec(tleft, tright, t, i, new IntExp(nleft, nright, n) ); 
+                  :}
+               |
+                  type_spec:t ID:i LB error:e RB SEMI 
+                  {: 
+                     parser.report_error("non_num value in array declaration", null);
+                     RESULT = new ArrayDec(tleft, tright, t, i, new IntExp(eleft, eright, "0") ); 
+                  :}
+               |
+                  type_spec:t NUM SEMI
+                  {: System.err.println("Error in line " + tleft + ", column " + 
+                      tright + " : Syntax error");
+                    parser.report_error("NUM instead of ID in var_dec", null); 
+                    RESULT = new NilVarDec(tleft, tright);
+                 :}
                ;
 
 // 5
@@ -171,12 +203,26 @@ fun_proto      ::= type_spec:t ID:i LP params:p RP SEMI
 
 // 8
 params         ::= param_list:pl {: RESULT = pl; :}
-               | VOID {: RESULT = new VarDecList(new NilVarDec(0, 0), null); :}
+               | VOID:v {: RESULT = new VarDecList(new NilVarDec(vleft, vright), null); :}
                ;
 
 // 9 
 param_list     ::= param_list:pl COMMA param:p
                   {:
+                     VarDecList t = pl;
+                     while(t.tail != null){
+                        t = t.tail;
+                     }
+                     t.tail = new VarDecList(p, null);
+                     RESULT = pl;
+                  :}
+               |
+               param_list:pl param:p
+                  {:
+                     System.err.println("Error in line " + plleft + ", column " + 
+                      plright + " : Syntax error");
+                     parser.report_error("Missing comma in param_list", null); 
+                     
                      VarDecList t = pl;
                      while(t.tail != null){
                         t = t.tail;
@@ -258,7 +304,7 @@ expression_stmt   ::=
                   |
                   error SEMI:s
                      {: 
-                        parser.report_error("invalid expression", s);
+                        parser.report_error("invalid expression statement", s);
                         RESULT = new NilExp(sleft, sright);
                      :}
                   ;
@@ -268,20 +314,45 @@ selection_stmt ::=
                   IF LP expression:e RP statement:s
                      {: RESULT = new IfExp(eleft, eright, e, s, new NilExp(sleft, sright)); :}
                   |
+                  IF LP:l error RP statement:s
+                     {: 
+                        parser.report_error("invalid IF statement condition", null); 
+                        RESULT = new IfExp(lleft, lright, new BoolExp(lleft, lright, false), s, new NilExp(sleft, sright));
+                     :}
+                  |
                   IF LP expression:e RP statement:s1 ELSE statement:s2
                      {: RESULT = new IfExp(eleft, eright, e, s1, s2); :}
+                  |
+                  IF LP:l error RP statement:s1 ELSE statement:s2
+                     {: 
+                        parser.report_error("invalid IF statement condition", null); 
+                        RESULT = new IfExp(lleft, lright, new BoolExp(lleft, lright, false), s1, s2);
+                     :}
                   ;
 
 // 17
 iteration_stmt ::=
                   WHILE:w LP expression:e RP statement:s1
                   {: RESULT = new WhileExp(wleft, wright, e, s1); :}
+               |
+                  WHILE:w LP error:e RP statement:s1
+                  {: 
+                  parser.report_error("invalid WHILE statement condition", null); 
+                  RESULT = new WhileExp(wleft, wright, new BoolExp(wleft, wright, false), s1); 
+                  :}
+
                ;
 
 // 18
 return_stmt ::=
                RETURN:r expression:e SEMI 
                   {: RESULT = new ReturnExp(rleft, rright, e); :}
+               |
+               RETURN:r error:e SEMI 
+                  {: 
+                  parser.report_error("invalid RETURN statement condition", null); 
+                  RESULT = new ReturnExp(rleft, rright, new NilExp(eleft, eright)); 
+                  :}
                |
                RETURN:r SEMI
                   {: RESULT = new ReturnExp(rleft, rright, new NilExp(rleft, rright)); :}
@@ -311,8 +382,20 @@ bool_expression   ::=
                      bool_expression:b1 OR bool_expression:b2
                      {: RESULT = new OpExp(b1left, b1right, b1, OpExp.OR, b2); :}
                   |
+                  bool_expression:b1 OR error:e bool_expression:b2
+                     {: 
+                           parser.report_error("invalid content after operator", null);
+                     RESULT = new OpExp(b1left, b1right, b1, OpExp.OR, b2); 
+                     :}
+                  |
                      bool_expression:b1 AND bool_expression:b2
                      {: RESULT = new OpExp(b1left, b1right, b1, OpExp.AND, b2); :}
+                  |
+                  bool_expression:b1 AND error:e bool_expression:b2
+                     {: 
+                           parser.report_error("invalid content after operator", null);
+                     RESULT = new OpExp(b1left, b1right, b1, OpExp.AND, b2); 
+                     :}
                   |
                      BITNOT bool_expression:b
                      {: RESULT = new OpExp(bleft, bright, new NilExp(bleft, bright), OpExp.BITNOT, b); :}
@@ -326,20 +409,56 @@ simple_expression ::=
                      arith_expression:a1 LE arith_expression:a2
                         {: RESULT = new OpExp(a1left, a1right, a1, OpExp.LE, a2); :}
                      |
+                     arith_expression:a1 LE error:e arith_expression:a2
+                        {: 
+                           parser.report_error("invalid content after operator", null);
+                        RESULT = new OpExp(a1left, a1right, a1, OpExp.LE, a2); 
+                        :}
+                     |
                      arith_expression:a1 LT arith_expression:a2
                         {: RESULT = new OpExp(a1left, a1right, a1, OpExp.LT, a2); :}
+                     |
+                     arith_expression:a1 LT error:e arith_expression:a2
+                        {: 
+                           parser.report_error("invalid content after operator", null);
+                        RESULT = new OpExp(a1left, a1right, a1, OpExp.LT, a2); 
+                        :}
                      |
                      arith_expression:a1 GE arith_expression:a2
                         {: RESULT = new OpExp(a1left, a1right, a1, OpExp.GE, a2); :}
                      |
+                     arith_expression:a1 GE error:e arith_expression:a2
+                        {: 
+                           parser.report_error("invalid content after operator", null);
+                        RESULT = new OpExp(a1left, a1right, a1, OpExp.GE, a2); 
+                        :}
+                     |
                      arith_expression:a1 GT arith_expression:a2
                         {: RESULT = new OpExp(a1left, a1right, a1, OpExp.GT, a2); :}
+                     |
+                     arith_expression:a1 GT error:e arith_expression:a2
+                        {: 
+                           parser.report_error("invalid content after operator", null);
+                        RESULT = new OpExp(a1left, a1right, a1, OpExp.GT, a2); 
+                        :}
                      |
                      arith_expression:a1 EQ arith_expression:a2
                         {: RESULT = new OpExp(a1left, a1right, a1, OpExp.EQ, a2); :}
                      |
+                     arith_expression:a1 EQ error:e arith_expression:a2
+                        {: 
+                           parser.report_error("invalid content after operator", null);
+                        RESULT = new OpExp(a1left, a1right, a1, OpExp.EQ, a2); 
+                        :}
+                     |
                      arith_expression:a1 NE arith_expression:a2
                         {: RESULT = new OpExp(a1left, a1right, a1, OpExp.NE, a2); :}
+                     |
+                     arith_expression:a1 NE error:e arith_expression:a2
+                        {: 
+                           parser.report_error("invalid content after operator", null);
+                        RESULT = new OpExp(a1left, a1right, a1, OpExp.NE, a2); 
+                        :}
                      |
                      arith_expression:a
                         {: RESULT = a; :}
@@ -350,14 +469,38 @@ arith_expression  ::=
                      arith_expression:a1 PLUS arith_expression:a2
                         {: RESULT = new OpExp(a1left, a1right, a1, OpExp.PLUS, a2); :}
                      |
+                     arith_expression:a1 PLUS error:e arith_expression:a2
+                        {: 
+                           parser.report_error("invalid content after operator", null);
+                        RESULT = new OpExp(a1left, a1right, a1, OpExp.PLUS, a2); 
+                        :}
+                     |
                      arith_expression:a1 MINUS arith_expression:a2
                         {: RESULT = new OpExp(a1left, a1right, a1, OpExp.MINUS, a2); :}
+                     |
+                     arith_expression:a1 MINUS error:e arith_expression:a2
+                        {: 
+                           parser.report_error("invalid content after operator", null);
+                        RESULT = new OpExp(a1left, a1right, a1, OpExp.MINUS, a2); 
+                        :}
                      |
                      arith_expression:a1 TIMES arith_expression:a2
                         {: RESULT = new OpExp(a1left, a1right, a1, OpExp.TIMES, a2); :}
                      |
+                     arith_expression:a1 TIMES error:e arith_expression:a2
+                        {: 
+                           parser.report_error("invalid content after operator", null);
+                        RESULT = new OpExp(a1left, a1right, a1, OpExp.TIMES, a2); 
+                        :}
+                     |
                      arith_expression:a1 DIV arith_expression:a2
                         {: RESULT = new OpExp(a1left, a1right, a1, OpExp.DIV, a2); :}
+                     |
+                     arith_expression:a1 DIV error:e arith_expression:a2
+                        {: 
+                           parser.report_error("invalid content after operator", null);
+                        RESULT = new OpExp(a1left, a1right, a1, OpExp.DIV, a2); 
+                        :}
                      |
                      factor:f
                         {: RESULT = f; :}
@@ -373,7 +516,7 @@ factor            ::=
                      |
                      LP error:e RP
                      {:   
-                        parser.report_error("Invalid arithmetic expression within parentheses", e); 
+                        parser.report_error("Invalid arithmetic expression within parentheses", null); 
                         RESULT = new NilExp(eleft, eright); 
                      :}
                      |

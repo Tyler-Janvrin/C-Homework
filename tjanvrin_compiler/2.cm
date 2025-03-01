@@ -1,0 +1,17 @@
+/* 
+This program deals with invalid expressions inside a function.
+
+One on at line [] column [], and the other on line [] column [].
+
+
+
+If you look at the output for this file, you should see that 
+we're able to partially recover from the first error 
+because it's contained within parentheses, but... wait
+
+ */
+
+int dog(int x, int y, bool b){
+    a = 5 - (dog cat);
+    b = 1a;
+}
