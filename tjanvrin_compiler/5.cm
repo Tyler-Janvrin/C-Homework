@@ -5,7 +5,13 @@ didn't like making it a NilExp.
 
  */
 
-void function(int dog int cat int frog);
+void function(int);
+
+void function( void ){
+    2 + 2
+
+    3 + 3;
+}
 
 int start;
 
