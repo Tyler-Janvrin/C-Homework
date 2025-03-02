@@ -14,23 +14,6 @@ if ( true ) x = 3; else x = 4;
 }
 */
 
-int qudzu;
-
-int dog(int x, int y, bool b){
-    int a;
-    int b;
-    
-    a = 5;
-    b = 10;
-}
-
-int pig;
-
-int cat(int x, int y[]){
-    int frog;
-    int horse;
-
-    horse = horse + frog;
-
-    horse = dog(true);
+int main( void ){
+    if(x + y >= y + z && 7 <= z + q);
 }

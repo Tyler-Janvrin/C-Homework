@@ -103,7 +103,7 @@ non terminal DecList program;
 precedence left OR;
 precedence left AND;
 precedence right BITNOT;
-precedence nonassoc EQ, NE;
+precedence nonassoc LT, LE, GT, GE, EQ, NE;
 precedence left PLUS, MINUS;
 precedence left TIMES, DIV;
 precedence right UMINUS;

@@ -5,6 +5,8 @@ To bulid the project, type "make". To clean up generated files, type "make clean
 To test source code like "yourfile.cm", type 
   "java -cp /usr/share/java/cup.jar:. CM yourfile.cm -a" 
 
+This will create a file called "yourfile.abs" containing the abstract syntax tree.
+
 To test just the scanner, type:
   "cat yourfile.cm | java -cp /usr/share/java/cup.jar:. Scanner"
 
