@@ -1,0 +1,33 @@
+/* 
+This is a simple program that should compile without errors.
+It finds base^exponent for a given base and exponent.
+*/
+
+int power(int base, int exponent);
+
+int power(int base, int exponent){
+    int count;
+    int running_total;
+
+    count = exponent;
+
+    while(count > 1){
+        running_total = running_total * base;
+        count = count - 1;
+    }
+
+    return running_total;
+}
+
+void main( void ){
+    int base;
+    int exponent;
+    int result;
+
+    base = input();
+    exponent = input();
+
+    result = power(base, exponent);
+
+    return result;    
+}

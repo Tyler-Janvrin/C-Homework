@@ -96,7 +96,7 @@ non terminal VarExp var;
 
 non terminal DecList program;
 
-non terminal Dec program1;
+// non terminal Dec program1;
 
 
 /* Precedence declarations */
@@ -200,21 +200,29 @@ fun_dec        ::= type_spec:t ID:i LP params:p RP compound_stmt:c
                      parser.report_error("invalid function body", null); 
                      RESULT = new FunctionDec(ileft, iright, t, i, p, new NilExp(eleft, eright)); 
                   :}
+                  |
+               type_spec:t ID:i LP error:e RP compound_stmt:c
+                  {:
+                     parser.report_error("invalid function declaration parameters", null); 
+                     RESULT = new FunctionDec(ileft, iright, t, i, new VarDecList(new NilVarDec(eleft, eright), null), c); 
+                  :}
                ;
 
 // 7
 fun_proto      ::= type_spec:t ID:i LP params:p RP SEMI
                   {: RESULT = new FunctionDec(ileft, iright, t, i, p, new NilExp(ileft, iright)); :}
+               |
+               type_spec:t ID:i LP error:e RP SEMI
+                  {:
+                     parser.report_error("invalid function prototype parameters", null); 
+                     RESULT = new FunctionDec(ileft, iright, t, i, new VarDecList(new NilVarDec(eleft, eright), null), new NilExp(ileft, iright)); 
+                  :}
                ;
 
 // 8
 params         ::= param_list:pl {: RESULT = pl; :}
                | VOID:v {: RESULT = new VarDecList(new NilVarDec(vleft, vright), null); :}
-               | error:e
-               {: 
-                  parser.report_error("invalid parameter list", null); 
-                  RESULT = new VarDecList(new NilVarDec(eleft, eright), null); 
-               :}
+               
                ;
 
 // 9 
@@ -551,6 +559,12 @@ factor            ::=
 call           ::=
                   ID:i LP args:a RP
                   {: RESULT = new CallExp(ileft, iright, i, a); :}
+                  |
+                  ID:i LP error:e RP
+                  {: 
+                     parser.report_error("invalid function call arguments", null);
+                     RESULT = new CallExp(ileft, iright, i, new ExpList(new NilExp(0,0), null)); 
+                  :}
                ;
 
 // 26

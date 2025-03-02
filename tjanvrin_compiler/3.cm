@@ -1,14 +1,31 @@
 /* 
+First error here is an invalid array declaration,
+on line 19.
+I handle this by setting the array size to zero,
+and throwing an error.
+
+Second error here (line 21) is a missing type specifier in 
+a function parameter declaration. Since I can't know what
+the type was intended to be, this ends up eating everything 
+in the parameters.
+
+Final error (line 27) is a missing comma in the second 
+function's parameters. In this case, we're able to recover
+completely - just remove the missing comma.
 
 
  */
 
-int dog(int x, int y, bool b){
-    int 5;
-    int 6;
-    int x;
+bool array[ invalid ];
 
-    x = x + 1;
+int some_func(int x, y, bool b){
+    int z;
+    z = 3;
+    return z;
+}
 
-
+int another_func(int x int y, bool b){
+    int z;
+    z=4;
+    return z;
 }

@@ -1,21 +1,36 @@
 /* 
-If I encounter an error in an if statement, I assume that the value being checked is false.
-Not sure if that's correct, but it's what I decided on. I made this choice because I
-didn't like making it a NilExp.
+There are six errors in this file:
 
+A function prototype on line 24 with 
+invalid arguments. This is similar to 
+the same problem for functions on 
+previous slides, but I had to implement
+it twice since function declarations
+and prototypes are defined differntly.
+
+On lines 27, 28, 29, and 32,
+we've got some examples of duplicated
+and invalid operators. I've put multiple, 
+to demonstrate that my error handling 
+can handle different kinds of duplicates.
+My error handling defaults to choosing the
+leftmost operator.
+
+Finally, on line 35, I've got in invalid parameter
+on a function call. Since it can't parse this,
+it defaults to a NilExp.
  */
 
-void function(int);
+void prototype(int int x, int y);
 
-void function( void ){
-    2 + 2
-
-    3 + 3;
+void main( void ){
+    if( x === y ){
+        x = y ++ y;
+        x = y -* y;
+    }
+    else{
+        true || && true;
+    }
+    
+    x = function_call(int x);
 }
-
-int start;
-
-int array[not_a_number];
-int array[6 + some stuff];
-
-int end;

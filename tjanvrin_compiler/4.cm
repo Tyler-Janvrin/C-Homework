@@ -1,16 +1,26 @@
 /* 
-If I encounter an error in an if statement, I assume that the value being checked is false.
-Not sure if that's correct, but it's what I decided on. I made this choice because I
-didn't like making it a NilExp.
+Three errors in this one as well.
+
+On line 23, we've got some extra operators.
+I remove them, and parse the statement as though
+they weren't there.
+
+On line 30, I've got some nonsense inside a
+while loop's condition check. Whenever 
+this happens, I throw an error and assume
+that the loop condition was "false".
+
+On line 34, I've got some more unparsable 
+content in front of a return statement. 
+When this happens, I treat it as an empty 
+return.
 
  */
 
-int dog(int x, int y, bool b){
-    int one;
-    int two;
-    int three;
+int main( void ){
+    int x;
 
-    if (1 == 2 && * + 3 == 4){
+    if (x == 2 || * + x >= 4){
         int x;
 
         x = x + 1;
@@ -21,15 +31,6 @@ int dog(int x, int y, bool b){
         x = x + 1;
     }
 
-    /*
-    if( * 1 == true){
-        x = 1;
-    }
-    else{
-        x = 2;
-    }
-    */
-
-    return aaa eee ooo;
+    return 5 6;
 
 }
