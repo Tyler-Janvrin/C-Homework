@@ -9,7 +9,7 @@ CUP=cup
 
 all: CM.class
 
-CM.class: absyn/*.java parser.java sym.java Lexer.java ShowTreeVisitor.java Scanner.java CM.java
+CM.class: absyn/*.java parser.java sym.java Lexer.java ShowTreeVisitor.java SemanticAnalyzer.java Scanner.java CM.java
 
 %.class: %.java
 	$(JAVAC) $(CLASSPATH) $^
@@ -22,4 +22,4 @@ parser.java: cm.cup
 	$(CUP) -expect 3 cm.cup
 
 clean:
-	rm -f parser.java Lexer.java sym.java *.class absyn/*.class *~ *.abs
+	rm -f parser.java Lexer.java sym.java *.class absyn/*.class *~ *.abs *.sym

@@ -18,6 +18,7 @@ parser code {:
        reason for the error which is passed into the method in the
        String 'message'. */
     public void report_error(String message, Object info) {
+
    
         /* Create a StringBuffer called 'm' with the string 'Error' in it. */
         StringBuffer m = new StringBuffer("Error");
@@ -61,6 +62,7 @@ parser code {:
        'message' and then exit.*/
     public void report_fatal_error(String message, Object info) {
         report_error(message, info);
+        valid = false; // if we hit a fatal error, we can't do type checking
         System.exit(1);
     }
 
@@ -154,12 +156,12 @@ dec            ::= var_dec:v  {: RESULT = v; :}
 
 // 4           
 var_dec        ::= type_spec:t ID:i SEMI 
-                  {: RESULT = new SimpleDec(tleft, tright, t, i); :}
+                  {: RESULT = new SimpleDec(ileft, iright, t, i); :}
                |  
                type_spec:t ID:i error:e SEMI 
                   {: 
                      parser.report_error("error in variable declaration", null);
-                     RESULT = new SimpleDec(tleft, tright, t, i); 
+                     RESULT = new SimpleDec(ileft, iright, t, i); 
                   :}
                |  
                   type_spec:t ID:i LB NUM:n RB SEMI 

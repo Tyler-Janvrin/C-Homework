@@ -1,19 +1,21 @@
-/* The simplest program I could think of. We'll start here and gradually build up */
-
-/* ~ x == y || y != z && frog */
-
-/*
-{int x[ 123 ];
+/*This program is for testing.*/
+int x;
 int y;
-int z;
-int q[456];
 
-x = y;
-if ( true ) x = 3; else x = 4;
 
-}
-*/
+int y;
+int x;
 
 int main( void ){
-    if(x + y >= y + z && 7 <= z + q);
+    int x;
+    int z;
+
+    {
+        int x;
+    }
+    {
+        int y;
+    }
+
+    return 5;
 }
