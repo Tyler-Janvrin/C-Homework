@@ -67,10 +67,8 @@ class CM {
         PrintStream console = System.out;
         System.setOut(filePrintStream);
         if (SHOW_TREE && result != null && p.valid == true) {
-          System.out.println("Entering the global scope:");
            AbsynVisitor visitor = new SemanticAnalyzer();
            result.accept(visitor, 0); 
-           System.out.println("Leaving the global scope");
         }
         System.setOut(console);
       } catch (Exception e) {

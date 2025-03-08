@@ -12,6 +12,13 @@ public class NameTy extends Absyn {
     this.col = col;
     this.type = type;
   }
+
+  public String TypeName(){
+    if(this.type == 0) return "bool";
+    if(this.type == 1) return "int";
+    if(this.type == 2) return "void";
+    return "error";
+  }
   
   public void accept( AbsynVisitor visitor, int level ) {
     visitor.visit( this, level );

@@ -1,20 +1,28 @@
 /*This program is for testing.*/
+
 int x;
-int y;
+bool y;
 
 
-int y;
-int x;
-
-int main( void ){
-    int x;
-    int z;
-
+int params(int paramone, bool paramtwo){
     {
-        int x;
+        bool another;
+        bool block;
     }
     {
-        int y;
+        bool another;
+        bool block;
+    }
+
+    return 6;
+}
+
+int main( void ){
+    int y;
+    bool z;
+    {
+        int z;
+        bool a;
     }
 
     return 5;

@@ -10,6 +10,7 @@ public class FunctionDec extends Dec {
     this.row = row;
     this.col = col;
     this.result = result;
+    this.type = result; // this is not clean, but I'm tired.
     this.func = func;
     this.params = params;
     this.body = body;
