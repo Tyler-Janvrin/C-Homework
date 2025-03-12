@@ -1,43 +1,10 @@
 /*This program is for testing.*/
 
-int x;
-bool y;
-
-int prototype(int x, bool y);
-
-/*
-int prototype(int x, bool y){
-    return 7;
-}
-*/
-
-int params(int p1, bool p2[]){
-    bool var1;
-    bool var2;
-    
-
-    var1 = notdeclared;
-    var1 = arr[3] + prototype + var2[1];
-    {
-        bool var1;
-        bool v3[6];
-        {
-        bool var1;
-        bool var2;
-        }
-    }
-    
-
-    return 6;
-}
-
 int main( void ){
-    int y;
-    bool z;
-    {
-        int z;
-        bool a;
-    }
+    int x;
+    bool y;
+
+    x + y;
 
     return 5;
 }

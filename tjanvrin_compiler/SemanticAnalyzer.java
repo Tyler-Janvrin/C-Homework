@@ -160,6 +160,42 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
   }
 
+  public boolean isInt(Exp exp){
+    if(exp.dtype == null){
+      return false;
+    }
+    if(exp.dtype.type.type == NameTy.INT){
+      return true;
+    }
+    else{
+      return false;
+    }
+  }
+
+  public boolean isBool(Exp exp){
+    if(exp.dtype == null){
+      return false;
+    }
+    if(exp.dtype.type.type == NameTy.BOOL){
+      return true;
+    }
+    else{
+      return false;
+    }
+  }
+
+  public boolean isVoid(Exp exp){
+    if(exp.dtype == null){
+      return false;
+    }
+    if(exp.dtype.type.type == NameTy.VOID){
+      return true;
+    }
+    else{
+      return false;
+    }
+  }
+
 
 
   private void indent( int level ) {
@@ -244,6 +280,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
   public void visit( OpExp exp, int level ) {
     //indent( level );
+    // case for arithmetic operators
     /* 
     System.out.print( "OpExp:" ); 
     switch( exp.op ) {
@@ -296,10 +333,25 @@ public class SemanticAnalyzer implements AbsynVisitor {
   }
         */ 
     // level++;
-    if (exp.left != null)
-       exp.left.accept( this, level );
-    if (exp.right != null)
-       exp.right.accept( this, level );
+    if (exp.left != null){
+      exp.left.accept( this, level );
+    }       
+    if (exp.right != null){
+      exp.right.accept( this, level );
+    }
+       
+
+    if(exp.op == OpExp.PLUS || exp.op == OpExp.MINUS || exp.op == OpExp.TIMES || exp.op == OpExp.DIV){
+      if(isInt(exp.left) && isInt(exp.right)){
+        exp.dtype = intType.dtype;
+      }
+      else if(exp.left.dtype == null || exp.right.dtype == null){
+        // don't do anything - setting it like this so I can build incrementally
+      }
+      else{
+        System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + " arguments to OpExp to be ints, but they weren" + exp.left.dtype.type.TypeName() + " and " + exp.right.dtype.type.TypeName());
+      }
+    }
   }
 
   public void visit(NameTy type, int level){
@@ -330,17 +382,35 @@ public class SemanticAnalyzer implements AbsynVisitor {
     NodeType node = lookup(exp.variable);
     if(node == null){
       exp.dtype = intType.dtype;
+      // we already print an error if the node doesn't exist, 
+      // so we don't need to print one again
     }
     // working here
-    else if(exp.variable instanceof SimpleVar && node.dtype instanceof SimpleDec
-    ||
-    exp.variable instanceof IndexVar && node.dtype instanceof ArrayDec
-    ){
-      exp.dtype = node.dtype;
+    else if(exp.variable instanceof SimpleVar){
+      if(!(node.dtype instanceof SimpleDec)){
+        // we don't have a matching variable
+        System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + " expected " + exp.variable.name + " to be SimpleVar but it was something else");
+        exp.dtype = intType.dtype; // assume it's an int
+      }
+      else{
+        // the variable class matches
+        exp.dtype = node.dtype;
+      }
+    }
+    else if (exp.variable instanceof IndexVar){
+      if(!(node.dtype instanceof ArrayDec)){
+        // we don't have a matching variable
+        System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + " expected " + exp.variable.name + " to be IndexVar but it was something else");
+        exp.dtype = intType.dtype; // assume it's an int
+      }
+      else{
+        // we need arithmetic to be able to do this...
+        System.err.println("Still need to do me!");
+
+      }
     }
     else{
-      System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + " function " + node.name + " called without parameters");
-
+      System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + " mismatched variable class");
     }
   }
 
@@ -401,6 +471,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     // level++;
     dec.type.accept(this, level);
     dec.size.accept(this, level);
+    
     insert(new NodeType(dec.name, dec, level));
   }
 
