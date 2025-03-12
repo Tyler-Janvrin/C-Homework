@@ -7,6 +7,10 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
   final static int SPACES = 4;
 
+  final static NodeType intType = new NodeType("int", new SimpleDec(0,0,new NameTy( 0, 0, NameTy.INT), "intType"), 0);
+  final static NodeType boolType = new NodeType("bool", new SimpleDec(0,0,new NameTy( 0, 0, NameTy.BOOL), "boolType"), 0);
+  final static NodeType voidType = new NodeType("void", new SimpleDec(0,0,new NameTy( 0, 0, NameTy.VOID), "voidType"), 0);
+
   public boolean valid = true;
 
   public HashMap<String, ArrayList<NodeType>> table;
@@ -17,6 +21,11 @@ public class SemanticAnalyzer implements AbsynVisitor {
   public SemanticAnalyzer(){
     this.table = new HashMap<String, ArrayList<NodeType>>(10);
   }
+
+  // all of these functions rely on the fact that 
+  // all of the arraylists will always have the highest node on top
+  // I'm not 100% sure they're collision resistant, though
+  // I'll add that later.
 
   // returns true if insert successful, false if otherwise
   public boolean insert(NodeType node){
@@ -33,10 +42,23 @@ public class SemanticAnalyzer implements AbsynVisitor {
       NodeType head = list.get(0);
       if(head.level == node.level && head.name.equals(node.name)){
         // redefining name - not allowed!
-        System.err.println("Error: row: " + (node.dtype.row + 1) + " column: " + (node.dtype.col + 1) + " variable declared earlier within same scope");
+        // special case: if head is a function prototype and node is a function, redefinition is allowed
+        // might come back here later to do some type checking
+        if(head.dtype instanceof FunctionDec && node.dtype instanceof FunctionDec){
+          FunctionDec funcHead = (FunctionDec) head.dtype;
+          if(funcHead.body instanceof NilExp){
+            list.remove(0);
+            list.add(0, node); // swap the function prototype for a full function
+            return true; // if this happens, everything's fine :)
+          }
+        }
+
+
+        System.err.println("Error: row: " + (node.dtype.row + 1) + " column: " + (node.dtype.col + 1) + " variable " + node.name + " declared earlier within same scope");
+
         return false;
       }
-      else if(head.level < node.level && head.name.equals(node.name)){
+      else if(head.level < node.level){
         // otherwise, add the node to the list
         list.add(0, node);
         System.err.println("In the main body loop");
@@ -51,16 +73,29 @@ public class SemanticAnalyzer implements AbsynVisitor {
       list = new ArrayList<NodeType>();
       list.add(node);
       table.put(node.name, list);
-      System.err.println("Special case for when the list is empty?");
+      System.err.println("Special case for when the list is empty? (I don't think this should happen...)");
       return true;
     }
   }
 
-  public NodeType lookup (String s){
+  public NodeType lookup (Var var){
     // this will perform a lookup to check if
     // a node with a given name exists in the hashmap
+    ArrayList<NodeType> list = table.get(var.name);
+    if(list == null){
+      // don't do anything
+    }
+    else{
+      for(int i = 0; i < list.size(); i++){
+        if(list.get(i).name.equals(var.name)){
+          return list.get(i); // found it!
+        }
+      }
+    }
 
-    return null;
+    System.err.println("Error: row: " + (var.row + 1) + " column: " + (var.col + 1) + " variable " + var.name + " not declared within current scope");
+
+    return null; // didn't find it
   }
 
   public void delete(int layer){
@@ -88,15 +123,32 @@ public class SemanticAnalyzer implements AbsynVisitor {
         // System.err.println(node.dtype.type.toString());
 
         if(node.dtype instanceof SimpleDec && node.level == level){
-          indent(level);
+          indent(level + 1);
           System.out.println(node.name + ": " + node.dtype.type.TypeName()+ " " + node.level);
         }
         else if(node.dtype instanceof ArrayDec && node.level == level){
-          
+          indent(level + 1);
+          System.out.println(node.name + ": " + node.dtype.type.TypeName()+ "[] " + node.level);
         }
         else if(node.dtype instanceof FunctionDec && node.level == level){
-          indent(level);
+          indent(level + 1);
           System.out.print(node.name + ": " + "(");
+          FunctionDec castNode = (FunctionDec) node.dtype;
+          VarDecList paramList = (VarDecList) castNode.params;
+          VarDec param;
+          while(paramList != null){
+            param = paramList.head;
+            if(param instanceof SimpleDec){
+              System.out.print(param.type.TypeName());
+            }
+            else if(param instanceof ArrayDec){
+              System.out.print(param.type.TypeName() + "[]");
+            }
+            paramList = paramList.tail;
+            if(paramList != null){
+              System.out.print(", ");
+            }
+          }
           System.out.println(") -> " + node.dtype.type.TypeName() + " " + node.level);
         }
         else{
@@ -275,6 +327,21 @@ public class SemanticAnalyzer implements AbsynVisitor {
     // System.out.println( "VarExp: " );
     // level++;
     exp.variable.accept( this, level);
+    NodeType node = lookup(exp.variable);
+    if(node == null){
+      exp.dtype = intType.dtype;
+    }
+    // working here
+    else if(exp.variable instanceof SimpleVar && node.dtype instanceof SimpleDec
+    ||
+    exp.variable instanceof IndexVar && node.dtype instanceof ArrayDec
+    ){
+      exp.dtype = node.dtype;
+    }
+    else{
+      System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + " function " + node.name + " called without parameters");
+
+    }
   }
 
   public void visit (BoolExp exp, int level){
@@ -334,26 +401,35 @@ public class SemanticAnalyzer implements AbsynVisitor {
     // level++;
     dec.type.accept(this, level);
     dec.size.accept(this, level);
+    insert(new NodeType(dec.name, dec, level));
   }
 
   // when we enter the function scope...
   public void visit (FunctionDec dec, int level){
     // System.out.println("FunctionDec: " + dec.func);
-    indent(level);
-
-    System.out.println("Entering the scope for function f: " + dec.func);
-
+    
+    if(!(dec.body instanceof NilExp)) {
+      indent(level + 1);
+      System.out.println("Entering the scope for function f: " + dec.func);
+    }
     
     dec.result.accept(this, level);
-
-    insert(new NodeType(dec.func, dec, level));
-
-    dec.params.accept(this, level + 1);
+    if(!(dec.body instanceof NilExp)) {
+      dec.params.accept(this, level + 1);
+    }
+    
     dec.body.accept(this, level);
+    //if(!(dec.body instanceof NilExp)) {
+      insert(new NodeType(dec.func, dec, level));
+    //}
+    
 
-    indent(level);
 
-    System.out.println("Leaving the scope for function f: " + dec.func);
+    
+    if(!(dec.body instanceof NilExp)) {
+      indent(level + 1);
+      System.out.println("Leaving the scope for function f: " + dec.func);
+    }
   }
 
   
