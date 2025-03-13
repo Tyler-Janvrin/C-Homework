@@ -27,6 +27,16 @@ public class SemanticAnalyzer implements AbsynVisitor {
   // I'm not 100% sure they're collision resistant, though
   // I'll add that later.
 
+  // helper function that checks to see ifa node is in a list
+  public boolean inList(ArrayList<NodeType> list, NodeType node){
+    for(int i = 0; i < list.size(); i++){
+      if(list.get(i).level == node.level && list.get(i).name.equals(node.name)){
+        return true;
+      }
+    }
+    return false;
+  }
+
   // returns true if insert successful, false if otherwise
   public boolean insert(NodeType node){
     // has to check for collisions
@@ -40,7 +50,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
     else if(list.size() > 0){
       NodeType head = list.get(0);
-      if(head.level == node.level && head.name.equals(node.name)){
+      if(inList(list, node)){
         // redefining name - not allowed!
         // special case: if head is a function prototype and node is a function, redefinition is allowed
         // might come back here later to do some type checking
@@ -66,6 +76,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
       }
       else{ // head level is greater than node level...
         System.err.println("Error: row: " + (node.dtype.row + 1) + " column: " + (node.dtype.col + 1) + " trying to add a node to the list from a lower level.");
+        valid = false;
         return false;
       }
     }
@@ -94,7 +105,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     System.err.println("Error: row: " + (var.row + 1) + " column: " + (var.col + 1) + " variable " + var.name + " not declared within current scope");
-
+    valid = false;
     return null; // didn't find it
   }
 
@@ -242,6 +253,11 @@ public class SemanticAnalyzer implements AbsynVisitor {
     //level++;
     exp.lhs.accept( this, level );
     exp.rhs.accept( this, level );
+
+    if(exp.lhs.dtype.type.type != exp.rhs.dtype.type.type){
+      System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + ": expected arguments to variable assignment to be the same, but they were " + exp.lhs.dtype.type.TypeName() + " and " + exp.rhs.dtype.type.TypeName());
+      valid = false;
+    }
   }
 
   public void visit( IfExp exp, int level ) {
@@ -252,6 +268,11 @@ public class SemanticAnalyzer implements AbsynVisitor {
     exp.thenpart.accept( this, level );
     if (exp.elsepart != null )
        exp.elsepart.accept( this, level );
+
+    if(!(isInt(exp.test) || isBool(exp.test))){
+      System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + ": expected if statement test condition to be either int or bool: it was " + exp.test.dtype.type.TypeName());
+      valid = false;
+    }
   }
 
   public void visit( CompoundExp exp, int level ){
@@ -276,6 +297,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
   public void visit( IntExp exp, int level ) {
     //indent( level );
     //System.out.println( "IntExp: " + exp.value ); 
+    exp.dtype = intType.dtype;
   }
 
   public void visit( OpExp exp, int level ) {
@@ -340,18 +362,74 @@ public class SemanticAnalyzer implements AbsynVisitor {
       exp.right.accept( this, level );
     }
        
-
+    // it would be good to add the name of the operator to the error message...
     if(exp.op == OpExp.PLUS || exp.op == OpExp.MINUS || exp.op == OpExp.TIMES || exp.op == OpExp.DIV){
+      exp.dtype = intType.dtype; // return type is always int
+      
       if(isInt(exp.left) && isInt(exp.right)){
-        exp.dtype = intType.dtype;
+        // do nothing
       }
       else if(exp.left.dtype == null || exp.right.dtype == null){
         // don't do anything - setting it like this so I can build incrementally
       }
       else{
-        System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + " arguments to OpExp to be ints, but they weren" + exp.left.dtype.type.TypeName() + " and " + exp.right.dtype.type.TypeName());
+        System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + ": expected arguments to arithmetic operators to be ints, but they were " + exp.left.dtype.type.TypeName() + " and " + exp.right.dtype.type.TypeName());
+        valid = false;
       }
     }
+    if(exp.op == OpExp.EQ || exp.op == OpExp.NE || exp.op == OpExp.LT || exp.op == OpExp.LE || exp.op == OpExp.GT || exp.op == OpExp.GE){
+      exp.dtype = boolType.dtype; // return type is always bool
+      if(isInt(exp.left) && isInt(exp.right)){
+        // do nothing
+      }
+      else if(exp.left.dtype == null || exp.right.dtype == null){
+        // don't do anything - setting it like this so I can build incrementally
+      }
+      else{
+        System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + ": expected arguments to relational operator to be ints, but they were " + exp.left.dtype.type.TypeName() + " and " + exp.right.dtype.type.TypeName());
+        valid = false;
+      }
+    }
+    if(exp.op == OpExp.AND || exp.op == OpExp.OR){
+      exp.dtype = boolType.dtype; // return type is always bool
+      if((isInt(exp.left) || isBool(exp.left)) && (isInt(exp.right) || isBool(exp.right))){
+        // do nothing
+      }
+      else if(exp.left.dtype == null || exp.right.dtype == null){
+        // don't do anything - setting it like this so I can build incrementally
+      }
+      else{
+        System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + ": expected arguments to boolean operator to be bool or int, but they were " + exp.left.dtype.type.TypeName() + " and " + exp.right.dtype.type.TypeName());
+        valid = false;
+      }
+    }
+    if(exp.op == OpExp.UMINUS){
+      exp.dtype = intType.dtype; // return type is always int
+      if(isInt(exp.right)){
+        
+      }
+      else if(exp.right.dtype == null){
+        // don't do anything - setting it like this so I can build incrementally
+      }
+      else{
+        System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + ": expected arguments to uminus operator to be int, but it was " + exp.right.dtype.type.TypeName());
+        valid = false;
+      }
+    }
+    if(exp.op == OpExp.BITNOT){
+      exp.dtype = boolType.dtype; // return type is alwasy bool
+      if(isBool(exp.right) || isInt(exp.right)){
+        // do nothing
+      }
+      else if(exp.right.dtype == null){
+        // don't do anything - setting it like this so I can build incrementally
+      }
+      else{
+        System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + ": expected arguments to not operator to be int or bool but it was " + exp.right.dtype.type.TypeName());
+        valid = false;
+      }
+    }
+    
   }
 
   public void visit(NameTy type, int level){
@@ -390,6 +468,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
       if(!(node.dtype instanceof SimpleDec)){
         // we don't have a matching variable
         System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + " expected " + exp.variable.name + " to be SimpleVar but it was something else");
+        valid = false;
         exp.dtype = intType.dtype; // assume it's an int
       }
       else{
@@ -401,22 +480,30 @@ public class SemanticAnalyzer implements AbsynVisitor {
       if(!(node.dtype instanceof ArrayDec)){
         // we don't have a matching variable
         System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + " expected " + exp.variable.name + " to be IndexVar but it was something else");
+        valid = false;
         exp.dtype = intType.dtype; // assume it's an int
       }
       else{
         // we need arithmetic to be able to do this...
-        System.err.println("Still need to do me!");
-
+        // System.err.println("Still need to do me!");
+        IndexVar castIndexVar = (IndexVar) exp.variable;
+        if(!isInt(castIndexVar.index)){
+          System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + " index of array expression not int type");
+          valid = false;
+        }
+        exp.dtype = node.dtype;
       }
     }
     else{
       System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + " mismatched variable class");
+      valid = false;
     }
   }
 
   public void visit (BoolExp exp, int level){
     // indent( level );
     //System.out.println("BoolExp: " + exp.value);
+    exp.dtype = boolType.dtype;
   }
 
   public void visit (SimpleVar variable, int level){
@@ -444,6 +531,11 @@ public class SemanticAnalyzer implements AbsynVisitor {
     // level++;
     exp.test.accept( this, level);
     exp.body.accept( this, level);
+
+    if(!(isInt(exp.test) || isBool(exp.test))){
+      System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + ": expected while statement test condition to be either int or bool: it was " + exp.test.dtype.type.TypeName());
+      valid = false;
+    }
   }
 
   public void visit ( CallExp exp, int level){
@@ -462,6 +554,11 @@ public class SemanticAnalyzer implements AbsynVisitor {
     dec.type.accept(this, level);
     // indent(level);
     // System.out.println("SimpleDec: " + dec.name + " level: " + level);
+    if(dec.type.type == NameTy.VOID){
+      System.err.println("Error: row: " + (dec.row + 1) + " column: " + (dec.col + 1) + " variable declared as type void");
+      valid = false;
+    }
+    
     insert(new NodeType(dec.name, dec, level));
   }
 
@@ -471,6 +568,11 @@ public class SemanticAnalyzer implements AbsynVisitor {
     // level++;
     dec.type.accept(this, level);
     dec.size.accept(this, level);
+
+    if(dec.type.type == NameTy.VOID){
+      System.err.println("Error: row: " + (dec.row + 1) + " column: " + (dec.col + 1) + " variable declared as type void");
+      valid = false;
+    }
     
     insert(new NodeType(dec.name, dec, level));
   }

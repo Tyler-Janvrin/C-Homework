@@ -104,11 +104,10 @@ non terminal DecList program;
 /* Precedence declarations */
 precedence left OR;
 precedence left AND;
-precedence right BITNOT;
 precedence nonassoc LT, LE, GT, GE, EQ, NE;
 precedence left PLUS, MINUS;
 precedence left TIMES, DIV;
-precedence right UMINUS;
+precedence right UMINUS, BITNOT;
 
 /* ----------------------------Grammar Section-------------------- */
    
@@ -400,26 +399,26 @@ var         ::=
 
 // 21 // make sure you set priority correctly
 bool_expression   ::=
-                     bool_expression:b1 OR bool_expression:b2
+                     bool_expression:b1 OR:op bool_expression:b2
                      {: RESULT = new OpExp(b1left, b1right, b1, OpExp.OR, b2); :}
                   |
-                  bool_expression:b1 OR error:e bool_expression:b2
+                  bool_expression:b1 OR:op error:e bool_expression:b2
                      {: 
                            parser.report_error("invalid content after operator", null);
                      RESULT = new OpExp(b1left, b1right, b1, OpExp.OR, b2); 
                      :}
                   |
-                     bool_expression:b1 AND bool_expression:b2
+                     bool_expression:b1 AND:op bool_expression:b2
                      {: RESULT = new OpExp(b1left, b1right, b1, OpExp.AND, b2); :}
                   |
-                  bool_expression:b1 AND error:e bool_expression:b2
+                  bool_expression:b1 AND:op error:e bool_expression:b2
                      {: 
                            parser.report_error("invalid content after operator", null);
                      RESULT = new OpExp(b1left, b1right, b1, OpExp.AND, b2); 
                      :}
                   |
-                     BITNOT bool_expression:b
-                     {: RESULT = new OpExp(bleft, bright, new NilExp(bleft, bright), OpExp.BITNOT, b); :}
+                  BITNOT:op bool_expression:b
+                     {: RESULT = new OpExp(opleft, opright, new NilExp(bleft, bright), OpExp.BITNOT, b); :}
                   |
                      simple_expression:s
                      {: RESULT = s; :}
@@ -427,58 +426,58 @@ bool_expression   ::=
 
 // 22
 simple_expression ::= 
-                     arith_expression:a1 LE arith_expression:a2
-                        {: RESULT = new OpExp(a1left, a1right, a1, OpExp.LE, a2); :}
+                     arith_expression:a1 LE:op arith_expression:a2
+                        {: RESULT = new OpExp(opleft, opright, a1, OpExp.LE, a2); :}
                      |
-                     arith_expression:a1 LE error:e arith_expression:a2
+                     arith_expression:a1 LE:op error:e arith_expression:a2
                         {: 
                            parser.report_error("invalid content after operator", null);
-                        RESULT = new OpExp(a1left, a1right, a1, OpExp.LE, a2); 
+                        RESULT = new OpExp(opleft, opright, a1, OpExp.LE, a2); 
                         :}
                      |
-                     arith_expression:a1 LT arith_expression:a2
-                        {: RESULT = new OpExp(a1left, a1right, a1, OpExp.LT, a2); :}
+                     arith_expression:a1 LT:op arith_expression:a2
+                        {: RESULT = new OpExp(opleft, opright, a1, OpExp.LT, a2); :}
                      |
-                     arith_expression:a1 LT error:e arith_expression:a2
+                     arith_expression:a1 LT:op error:e arith_expression:a2
                         {: 
                            parser.report_error("invalid content after operator", null);
-                        RESULT = new OpExp(a1left, a1right, a1, OpExp.LT, a2); 
+                        RESULT = new OpExp(opleft, opright, a1, OpExp.LT, a2); 
                         :}
                      |
-                     arith_expression:a1 GE arith_expression:a2
-                        {: RESULT = new OpExp(a1left, a1right, a1, OpExp.GE, a2); :}
+                     arith_expression:a1 GE:op arith_expression:a2
+                        {: RESULT = new OpExp(opleft, opright, a1, OpExp.GE, a2); :}
                      |
-                     arith_expression:a1 GE error:e arith_expression:a2
+                     arith_expression:a1 GE:op error:e arith_expression:a2
                         {: 
                            parser.report_error("invalid content after operator", null);
-                        RESULT = new OpExp(a1left, a1right, a1, OpExp.GE, a2); 
+                        RESULT = new OpExp(opleft, opright, a1, OpExp.GE, a2); 
                         :}
                      |
-                     arith_expression:a1 GT arith_expression:a2
-                        {: RESULT = new OpExp(a1left, a1right, a1, OpExp.GT, a2); :}
+                     arith_expression:a1 GT:op arith_expression:a2
+                        {: RESULT = new OpExp(opleft, opright, a1, OpExp.GT, a2); :}
                      |
-                     arith_expression:a1 GT error:e arith_expression:a2
+                     arith_expression:a1 GT:op error:e arith_expression:a2
                         {: 
                            parser.report_error("invalid content after operator", null);
-                        RESULT = new OpExp(a1left, a1right, a1, OpExp.GT, a2); 
+                        RESULT = new OpExp(opleft, opright, a1, OpExp.GT, a2); 
                         :}
                      |
-                     arith_expression:a1 EQ arith_expression:a2
-                        {: RESULT = new OpExp(a1left, a1right, a1, OpExp.EQ, a2); :}
+                     arith_expression:a1 EQ:op arith_expression:a2
+                        {: RESULT = new OpExp(opleft, opright, a1, OpExp.EQ, a2); :}
                      |
-                     arith_expression:a1 EQ error:e arith_expression:a2
+                     arith_expression:a1 EQ:op error:e arith_expression:a2
                         {: 
                            parser.report_error("invalid content after operator", null);
-                        RESULT = new OpExp(a1left, a1right, a1, OpExp.EQ, a2); 
+                        RESULT = new OpExp(opleft, opright, a1, OpExp.EQ, a2); 
                         :}
                      |
-                     arith_expression:a1 NE arith_expression:a2
-                        {: RESULT = new OpExp(a1left, a1right, a1, OpExp.NE, a2); :}
+                     arith_expression:a1 NE:op arith_expression:a2
+                        {: RESULT = new OpExp(opleft, opright, a1, OpExp.NE, a2); :}
                      |
-                     arith_expression:a1 NE error:e arith_expression:a2
+                     arith_expression:a1 NE:op error:e arith_expression:a2
                         {: 
                            parser.report_error("invalid content after operator", null);
-                        RESULT = new OpExp(a1left, a1right, a1, OpExp.NE, a2); 
+                        RESULT = new OpExp(opleft, opright, a1, OpExp.NE, a2); 
                         :}
                      |
                      arith_expression:a
@@ -487,40 +486,40 @@ simple_expression ::=
 
 // 23
 arith_expression  ::=
-                     arith_expression:a1 PLUS arith_expression:a2
-                        {: RESULT = new OpExp(a1left, a1right, a1, OpExp.PLUS, a2); :}
+                     arith_expression:a1 PLUS:op arith_expression:a2
+                        {: RESULT = new OpExp(opleft, opright, a1, OpExp.PLUS, a2); :}
                      |
-                     arith_expression:a1 PLUS error:e arith_expression:a2
+                     arith_expression:a1 PLUS:op error:e arith_expression:a2
                         {: 
                            parser.report_error("invalid content after operator", null);
-                        RESULT = new OpExp(a1left, a1right, a1, OpExp.PLUS, a2); 
+                        RESULT = new OpExp(opleft, opright, a1, OpExp.PLUS, a2); 
                         :}
                      |
-                     arith_expression:a1 MINUS arith_expression:a2
-                        {: RESULT = new OpExp(a1left, a1right, a1, OpExp.MINUS, a2); :}
+                     arith_expression:a1 MINUS:op arith_expression:a2
+                        {: RESULT = new OpExp(opleft, opright, a1, OpExp.MINUS, a2); :}
                      |
-                     arith_expression:a1 MINUS error:e arith_expression:a2
+                     arith_expression:a1 MINUS:op error:e arith_expression:a2
                         {: 
                            parser.report_error("invalid content after operator", null);
-                        RESULT = new OpExp(a1left, a1right, a1, OpExp.MINUS, a2); 
+                        RESULT = new OpExp(opleft, opright, a1, OpExp.MINUS, a2); 
                         :}
                      |
-                     arith_expression:a1 TIMES arith_expression:a2
-                        {: RESULT = new OpExp(a1left, a1right, a1, OpExp.TIMES, a2); :}
+                     arith_expression:a1 TIMES:op arith_expression:a2
+                        {: RESULT = new OpExp(opleft, opright, a1, OpExp.TIMES, a2); :}
                      |
-                     arith_expression:a1 TIMES error:e arith_expression:a2
+                     arith_expression:a1 TIMES:op error:e arith_expression:a2
                         {: 
                            parser.report_error("invalid content after operator", null);
-                        RESULT = new OpExp(a1left, a1right, a1, OpExp.TIMES, a2); 
+                        RESULT = new OpExp(opleft, opright, a1, OpExp.TIMES, a2); 
                         :}
                      |
-                     arith_expression:a1 DIV arith_expression:a2
-                        {: RESULT = new OpExp(a1left, a1right, a1, OpExp.DIV, a2); :}
+                     arith_expression:a1 DIV:op arith_expression:a2
+                        {: RESULT = new OpExp(opleft, opright, a1, OpExp.DIV, a2); :}
                      |
-                     arith_expression:a1 DIV error:e arith_expression:a2
+                     arith_expression:a1 DIV:op error:e arith_expression:a2
                         {: 
                            parser.report_error("invalid content after operator", null);
-                        RESULT = new OpExp(a1left, a1right, a1, OpExp.DIV, a2); 
+                        RESULT = new OpExp(opleft, opright, a1, OpExp.DIV, a2); 
                         :}
                      |
                      factor:f
@@ -532,8 +531,8 @@ factor            ::=
                      MINUS:m factor:a1 
                         {: RESULT = new OpExp(mleft, mright, new NilExp(mleft, mright), OpExp.UMINUS, a1); :} %prec UMINUS
                      |
-                     LP arith_expression:a RP
-                        {: RESULT = a; :}
+                     LP bool_expression:b RP
+                        {: RESULT = b; :}
                      |
                      LP error:e RP
                      {:   
