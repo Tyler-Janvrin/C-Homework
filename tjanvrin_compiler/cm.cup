@@ -49,6 +49,8 @@ parser code {:
         /* Add to the end of the StringBuffer error message created in
            this method the message that was passed into this method. */
         m.append(" : "+message);
+        /*Set valid to false. */
+        valid = false;
    
         /* Print the contents of the StringBuffer 'm', which contains
            an error message, out on a line. */

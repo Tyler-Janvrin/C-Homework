@@ -67,8 +67,10 @@ class CM {
         PrintStream console = System.out;
         System.setOut(filePrintStream);
         if (SHOW_TREE && result != null && p.valid == true) {
-           AbsynVisitor visitor = new SemanticAnalyzer();
+           SemanticAnalyzer visitor = new SemanticAnalyzer();
+           visitor.insertSystemFunctions();
            result.accept(visitor, 0); 
+           visitor.checkLastWasMain();
         }
         System.setOut(console);
       } catch (Exception e) {

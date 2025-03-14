@@ -17,9 +17,50 @@ public class SemanticAnalyzer implements AbsynVisitor {
   
   public NodeType last_function; // keep track of the last function
   // in the file, to see if it's main.
+  public int returnCount; // keep track of how many returns there are in a function
 
   public SemanticAnalyzer(){
     this.table = new HashMap<String, ArrayList<NodeType>>(10);
+  }
+
+  public void checkLastWasMain(){
+    String decString = "";
+    FunctionDec castNode = (FunctionDec) last_function.dtype;
+    VarDecList paramList = castNode.params;
+    VarDec param;
+    decString = decString + last_function.name + "(";
+    while(paramList != null){
+      param = paramList.head;
+      if(param instanceof NilVarDec){
+        // do nothing
+      }
+      else if(param instanceof ArrayDec){
+        decString = decString + param.type.TypeName() + "[]";
+      }
+      else{
+        decString = decString + param.type.TypeName();
+      }
+      paramList = paramList.tail;
+      if(paramList != null){
+        decString = decString + ", ";
+      }
+    }
+    decString = decString + ")";
+
+    if(decString.equals("main()") && last_function.dtype.type.type == NameTy.INT){
+      // do nothing
+    }
+    else{
+      System.err.println("Error: main missing/not last function in file (last function was " +last_function.dtype.type.TypeName() + " "+ decString + ")");
+    }
+  }
+
+  public void insertSystemFunctions(){
+    FunctionDec input = new FunctionDec(0,0, new NameTy(0,0,NameTy.INT),"input", new VarDecList(new NilVarDec(0,0), null), new NilExp(0,0));
+    FunctionDec output = new FunctionDec(0,0, new NameTy(0,0,NameTy.VOID),"output", new VarDecList(new SimpleDec(0,0, new NameTy(0,0, NameTy.INT), "ajlfjkalejlajkfa"), null), new NilExp(0,0));
+    insert(new NodeType("input", input, 0));
+    insert(new NodeType("output", output, 0));
+  
   }
 
   // all of these functions rely on the fact that 
@@ -45,7 +86,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
       list = new ArrayList<NodeType>();
       list.add(node);
       table.put(node.name, list);
-      System.err.println("In the null loop");
+      // System.err.println("In the null loop");
       return true;
     }
     else if(list.size() > 0){
@@ -71,7 +112,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
       else if(head.level < node.level){
         // otherwise, add the node to the list
         list.add(0, node);
-        System.err.println("In the main body loop");
+         // System.err.println("In the main body loop");
         return true;
       }
       else{ // head level is greater than node level...
@@ -81,10 +122,10 @@ public class SemanticAnalyzer implements AbsynVisitor {
       }
     }
     else{
+      // actually, there are cases where it's fine for the list to be empty. what a relief :)
       list = new ArrayList<NodeType>();
       list.add(node);
       table.put(node.name, list);
-      System.err.println("Special case for when the list is empty? (I don't think this should happen...)");
       return true;
     }
   }
@@ -106,6 +147,23 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
     System.err.println("Error: row: " + (var.row + 1) + " column: " + (var.col + 1) + " variable " + var.name + " not declared within current scope");
     valid = false;
+    return null; // didn't find it
+  }
+
+  public NodeType lookup (String str){
+    // this will perform a lookup to check if
+    // a node with a given name exists in the hashmap
+    ArrayList<NodeType> list = table.get(str);
+    if(list == null){
+      // don't do anything
+    }
+    else{
+      for(int i = 0; i < list.size(); i++){
+        if(list.get(i).name.equals(str)){
+          return list.get(i); // found it!
+        }
+      }
+    }
     return null; // didn't find it
   }
 
@@ -258,6 +316,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
       System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + ": expected arguments to variable assignment to be the same, but they were " + exp.lhs.dtype.type.TypeName() + " and " + exp.rhs.dtype.type.TypeName());
       valid = false;
     }
+
+    exp.dtype = exp.lhs.dtype;
   }
 
   public void visit( IfExp exp, int level ) {
@@ -465,16 +525,18 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
     // working here
     else if(exp.variable instanceof SimpleVar){
+      /* 
       if(!(node.dtype instanceof SimpleDec)){
         // we don't have a matching variable
         System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + " expected " + exp.variable.name + " to be SimpleVar but it was something else");
         valid = false;
         exp.dtype = intType.dtype; // assume it's an int
       }
-      else{
+        */
+      //else{
         // the variable class matches
         exp.dtype = node.dtype;
-      }
+      //}
     }
     else if (exp.variable instanceof IndexVar){
       if(!(node.dtype instanceof ArrayDec)){
@@ -523,6 +585,16 @@ public class SemanticAnalyzer implements AbsynVisitor {
     //System.out.println( "ReturnExp: " );
     // level++;
     exp.exp.accept( this, level);
+    exp.dtype = exp.exp.dtype;
+    returnCount++;
+    if(last_function.dtype.type.type != exp.dtype.type.type){
+      System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + " mismatched return type: expected " + last_function.dtype.type.TypeName() + " but was " + exp.dtype.type.TypeName());
+      valid = false;
+    }
+    if(last_function.dtype.type.type == NameTy.VOID){
+      System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + " return statement in void function ");
+      valid = false;
+    }
   }
 
   public void visit( WhileExp exp, int level ) {
@@ -543,6 +615,95 @@ public class SemanticAnalyzer implements AbsynVisitor {
     //System.out.println("CallExp: " + exp.func);
     // level++;
     exp.args.accept(this, level);
+
+    NodeType node = lookup(exp.func);
+
+    if(node == null){
+      System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + " function " + exp.func + " not declared within current scope");
+      valid = false;
+    }
+    else{
+      exp.dtype = node.dtype; // very important
+      // node is not null
+      if(!(node.dtype instanceof FunctionDec)){
+        System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + " attempting to call non-function variable " + exp.func);
+        valid = false;
+      }
+      else{
+        // node is a function dec
+
+        // get the declaration string
+        String decString = "";
+        FunctionDec castNode = (FunctionDec) node.dtype;
+        VarDecList paramList = castNode.params;
+        VarDec param;
+        decString = decString + node.name + "(";
+        while(paramList != null){
+          param = paramList.head;
+          if(param instanceof NilVarDec){
+            // do nothing
+          }
+          else if(param instanceof ArrayDec){
+            decString = decString + param.type.TypeName() + "[]";
+          }
+          else{
+            decString = decString + param.type.TypeName();
+          }
+          paramList = paramList.tail;
+          if(paramList != null){
+            decString = decString + ", ";
+          }
+        }
+        decString = decString + ")";
+
+        // get the expression string
+        String expString = "";
+        ExpList expList = exp.args;
+        Exp item;
+        expString = expString + exp.func + "(";
+        while(expList != null){
+          item = expList.head;
+          if(item instanceof NilExp){
+            // do nothing
+          }
+          else if(item instanceof VarExp){
+            VarExp varItem = (VarExp) item;
+            NodeType varNode = lookup(varItem.variable.name);
+            
+            if(varNode == null){
+              System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + " function " + exp.func + " not declared within current scope");
+              valid = false;
+            }
+            else{
+              if(varNode.dtype instanceof ArrayDec){
+                expString = expString + item.dtype.type.TypeName() + "[]";
+              }
+              else{
+                expString = expString + item.dtype.type.TypeName();
+              }
+            }
+          }
+          else{
+            expString = expString + item.dtype.type.TypeName();
+          }
+          expList = expList.tail;
+          if(expList != null){
+            expString = expString + ", ";
+          }
+        }
+        expString = expString + ")";
+
+        if(!decString.equals(expString)){
+          System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + " function signature: " + decString + " doesn't match function call: " + expString);
+          valid = false;
+        }
+
+      }
+
+
+    }
+
+
   }
 
 
@@ -585,11 +746,16 @@ public class SemanticAnalyzer implements AbsynVisitor {
       indent(level + 1);
       System.out.println("Entering the scope for function f: " + dec.func);
     }
+
+    
     
     dec.result.accept(this, level);
     if(!(dec.body instanceof NilExp)) {
       dec.params.accept(this, level + 1);
     }
+
+    returnCount = 0; // keep track of return type
+    last_function = new NodeType(dec.func, dec, 0);
     
     dec.body.accept(this, level);
     //if(!(dec.body instanceof NilExp)) {
@@ -598,6 +764,10 @@ public class SemanticAnalyzer implements AbsynVisitor {
     
 
 
+    if((dec.type.type == NameTy.BOOL || dec.type.type == NameTy.INT) && returnCount == 0){
+      System.err.println("Error: row: " + (dec.row + 1) + " column: " + (dec.col + 1) + " missing return statement");
+      valid = false;
+    }
     
     if(!(dec.body instanceof NilExp)) {
       indent(level + 1);

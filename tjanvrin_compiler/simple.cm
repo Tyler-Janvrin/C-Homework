@@ -61,5 +61,7 @@ int main( void ){
     y = false;
     y = 5;
 
+    x = notdeclaredfunc();
+
     return 5;
 }
