@@ -19,7 +19,7 @@ int power(int base, int exponent){
     return running_total;
 }
 
-void main( void ){
+int main( void ){
     int base;
     int exponent;
     int result;

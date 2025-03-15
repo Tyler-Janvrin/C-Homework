@@ -1,36 +1,23 @@
 /* 
-Three errors in this one as well.
+For this one, I want to try some errors regarding functions.
 
-On line 23, we've got some extra operators.
-I remove them, and parse the statement as though
-they weren't there.
+There's an error on line 20, and on line 22. Both are mismatched function calls:
+I wanted to show that my implementation works with both 
+functions and prototypes.
 
-On line 30, I've got some nonsense inside a
-while loop's condition check. Whenever 
-this happens, I throw an error and assume
-that the loop condition was "false".
+There's also one error that doesn't have an associated line.
+This is because the last function in this program isn't int main(void).
+*/
 
-On line 34, I've got some more unparsable 
-content in front of a return statement. 
-When this happens, I treat it as an empty 
-return.
 
- */
+int prototype(int x, bool y);
 
-int main( void ){
-    int x;
+void realFunc(void){
+    output(42);
+}
 
-    if (x == 2 || * + x >= 4){
-        int x;
+void notMain( int x){
+    x = prototype();
 
-        x = x + 1;
-        output(x);
-    }
-
-    while( dog frog horse cat){
-        x = x + 1;
-    }
-
-    return 5 6;
-
+    realFunc(7, 8);
 }

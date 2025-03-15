@@ -52,7 +52,7 @@ class CM {
       }
     }
     else if(argv[1].equals("-s")){
-      System.out.println("Still working on this code...");
+      // System.out.println("Still working on this code...");
       String fileName = argv[0];
       if(!fileName.endsWith(".cm")){
         System.out.print("Invalid filename: must end with .cm");

@@ -52,6 +52,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
     else{
       System.err.println("Error: main missing/not last function in file (last function was " +last_function.dtype.type.TypeName() + " "+ decString + ")");
+      valid = false;
     }
   }
 
@@ -106,7 +107,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
 
         System.err.println("Error: row: " + (node.dtype.row + 1) + " column: " + (node.dtype.col + 1) + " variable " + node.name + " declared earlier within same scope");
-
+        valid = false;
         return false;
       }
       else if(head.level < node.level){
@@ -193,11 +194,11 @@ public class SemanticAnalyzer implements AbsynVisitor {
 
         if(node.dtype instanceof SimpleDec && node.level == level){
           indent(level + 1);
-          System.out.println(node.name + ": " + node.dtype.type.TypeName()+ " " + node.level);
+          System.out.println(node.name + ": " + node.dtype.type.TypeName());
         }
         else if(node.dtype instanceof ArrayDec && node.level == level){
           indent(level + 1);
-          System.out.println(node.name + ": " + node.dtype.type.TypeName()+ "[] " + node.level);
+          System.out.println(node.name + ": " + node.dtype.type.TypeName()+ "[]");
         }
         else if(node.dtype instanceof FunctionDec && node.level == level){
           indent(level + 1);
@@ -218,7 +219,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
               System.out.print(", ");
             }
           }
-          System.out.println(") -> " + node.dtype.type.TypeName() + " " + node.level);
+          System.out.println(") -> " + node.dtype.type.TypeName());
         }
         else{
           // those are the only ones we care about...
@@ -543,7 +544,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
         // we don't have a matching variable
         System.err.println("Error: row: " + (exp.row + 1) + " column: " + (exp.col + 1) + " expected " + exp.variable.name + " to be IndexVar but it was something else");
         valid = false;
-        exp.dtype = intType.dtype; // assume it's an int
+        exp.dtype = node.dtype; // assume it's an int
       }
       else{
         // we need arithmetic to be able to do this...
@@ -764,12 +765,14 @@ public class SemanticAnalyzer implements AbsynVisitor {
     
 
 
-    if((dec.type.type == NameTy.BOOL || dec.type.type == NameTy.INT) && returnCount == 0){
-      System.err.println("Error: row: " + (dec.row + 1) + " column: " + (dec.col + 1) + " missing return statement");
-      valid = false;
-    }
+    
     
     if(!(dec.body instanceof NilExp)) {
+      // check for missing return statement even if function is not prototype
+      if((dec.type.type == NameTy.BOOL || dec.type.type == NameTy.INT) && returnCount == 0){
+        System.err.println("Error: row: " + (dec.row + 1) + " column: " + (dec.col + 1) + " missing return statement");
+        valid = false;
+      }
       indent(level + 1);
       System.out.println("Leaving the scope for function f: " + dec.func);
     }

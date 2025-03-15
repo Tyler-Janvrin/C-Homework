@@ -1,36 +1,42 @@
 /* 
-There are six errors in this file:
+ I tried to cover in this file some stuff that I didn't get a chance
+ to put in my other files. There should be 4 errors here.
 
-A function prototype on line 24 with 
-invalid arguments. This is similar to 
-the same problem for functions on 
-previous slides, but I had to implement
-it twice since function declarations
-and prototypes are defined differntly.
+ On line 25, we have an attempt to index a non-index variable.
 
-On lines 27, 28, 29, and 32,
-we've got some examples of duplicated
-and invalid operators. I've put multiple, 
-to demonstrate that my error handling 
-can handle different kinds of duplicates.
-My error handling defaults to choosing the
-leftmost operator.
+ On line 27, we pass void to the argument of an if statement, 
+ which expects int or bool.
 
-Finally, on line 35, I've got in invalid parameter
-on a function call. Since it can't parse this,
-it defaults to a NilExp.
+ On line 33, we return a bool value in a void function, and on 
+ line 37, we return an in value in a bool functtion.
+ These are both errors, because the type of the function doesn't
+ match the return type.
+
+ On line 40, we're missing a return statement in main. The location of this error is
+ the location of the function, since we don't know "where" the missing 
+ return statement should be.
  */
 
-void prototype(int int x, int y);
+void someFunc(int x);
 
-void main( void ){
-    if( x === y ){
-        x = y ++ y;
-        x = y -* y;
+void someFunc(int x){
+    bool y[5];
+
+    x[3];
+
+    if(someFunc){
+        /* Doesn't matter */
     }
-    else{
-        true || && true;
-    }
-    
-    x = function_call(int x);
+}
+
+int extraReturn( void ){
+    return true;
+} 
+
+bool mismatchedReturn( void ){
+    return 17;
+} 
+
+int main(void){
+
 }

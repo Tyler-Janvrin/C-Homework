@@ -1,31 +1,48 @@
 /* 
-First error here is an invalid array declaration,
-on line 19.
-I handle this by setting the array size to zero,
-and throwing an error.
+For this program, I'm focusing on type checking.
 
-Second error here (line 21) is a missing type specifier in 
-a function parameter declaration. Since I can't know what
-the type was intended to be, this ends up eating everything 
-in the parameters.
+On line 28, I show an error resulting from the assignment of 
+a boolean value to a relational operator. A little earlier, 
+I show that same operator working correctly.
 
-Final error (line 27) is a missing comma in the second 
-function's parameters. In this case, we're able to recover
-completely - just remove the missing comma.
+On line 42, I try to assign an int to a boolean variable, resulting in 
+another error. I also show some examples of assignment working correctly.
+
+Finally, on line 45, I attempt to index an array using a non-int type
+(in this case, a boolean value). As before, I also show some examples 
+of this working correctly.
 
 
  */
 
-bool array[ invalid ];
+int x;
+bool y;
 
-int some_func(int x, y, bool b){
-    int z;
-    z = 3;
-    return z;
+void exampleFunc( int x ){
+    if(x > 0 && x < 10){
+        int z;
+        z = input();
+        z = z + 1;
+        output(z);
+    }
+    if(x > 0 && x < true){
+        int z;
+        z = input();
+        z = z + 1;
+        output(z);
+    }
 }
 
-int another_func(int x int y, bool b){
-    int z;
-    z=4;
-    return z;
+int main(void){
+    int x;
+    bool y;
+    bool boolarray[7];
+
+    x = 17;
+    y = x;
+
+    y = boolarray[1 + 2];
+    y = boolarray[1 == 1];
+
+    return 0;
 }
