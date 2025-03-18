@@ -47,7 +47,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
     decString = decString + ")";
 
-    if(decString.equals("main()") && last_function.dtype.type.type == NameTy.INT){
+    if(decString.equals("main()") && last_function.dtype.type.type == NameTy.VOID){
       // do nothing
     }
     else{
