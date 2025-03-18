@@ -758,9 +758,10 @@ public class SemanticAnalyzer implements AbsynVisitor {
     returnCount = 0; // keep track of return type
     last_function = new NodeType(dec.func, dec, 0);
     
+    insert(new NodeType(dec.func, dec, level));
     dec.body.accept(this, level);
     //if(!(dec.body instanceof NilExp)) {
-      insert(new NodeType(dec.func, dec, level));
+      
     //}
     
 

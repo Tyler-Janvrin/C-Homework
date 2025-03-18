@@ -13,11 +13,14 @@ This is because the last function in this program isn't int main(void).
 int prototype(int x, bool y);
 
 void realFunc(void){
-    output(42);
+    int y;
+    if(realFunc()){
+        int x;
+    }
 }
 
 void notMain( int x){
     x = prototype();
 
-    realFunc(7, 8);
+    realFunc(7, true, 9);
 }
