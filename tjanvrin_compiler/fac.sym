@@ -1,0 +1,13 @@
+Entering the global scope:
+    Entering the scope for function f: main
+    Entering a new block:
+        Entering a new block:
+        Leaving the block
+        x: int
+        fac: int
+    Leaving the block
+    Leaving the scope for function f: main
+    output: (int) -> void
+    input: () -> int
+    main: () -> void
+Leaving the global scope
