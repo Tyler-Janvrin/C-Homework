@@ -2,264 +2,324 @@ import absyn.*;
 
 public class CodeGenerator implements AbsynCodeVisitor {
 
-  int mainEntry, globalOffset;
+  int mainEntry = 0, globalOffset = 0;
+  int frameOffset = 0;
+  int ofpFO = 0; // original function pointer frame offset
+  int retFO = 0; // return address frame offset
+  int initFO = 0; // initial frame offset
+
+  // special register names
+  final int ac = 0;
+  final int ac1 = 1;
+  final int gp = 6;
+  final int fp = 5;
+  final int pc = 7;
+  // they also mention fp, gp, pc, ofpFO, retFO, and initFO
+
+  // keep track of locations in the file
+  int emitLoc = 0;
+  int highEmitLoc = 0;
+
+  void emitRO(String op, int r, int s, int t, String c){
+    System.out.printf("%3d: %5s %d, %d, %d", emitLoc, op, r, s, t);
+    System.out.printf("\t%s\n", c);
+    ++emitLoc;
+    if(highEmitLoc < emitLoc){
+      highEmitLoc = emitLoc;
+    }
+  }
+
+  void emitRM(String op, int r, int d, int s, String c){
+    System.out.printf("%3d: %5s %d, %d(%d)", emitLoc, op, r, d, s);
+    System.out.printf("\t%s\n", c);
+    ++emitLoc;
+    if(highEmitLoc < emitLoc){
+      highEmitLoc = emitLoc;
+    }
+  }
+
+  void emitRM_Abs(String op, int r, int a, String c){
+    System.out.printf("%3d: %5s %d, %d(%d)", emitLoc, op, r, a - (emitLoc + 1), pc);
+    System.out.printf("\t%s\n", c);
+    ++emitLoc;
+    if(highEmitLoc < emitLoc){
+      highEmitLoc = emitLoc;
+    }
+  }
+
+  int emitSkip(int distance){
+    int i = emitLoc;
+    emitLoc += distance;
+    if(highEmitLoc < emitLoc){
+      highEmitLoc = emitLoc;
+    }
+    return i;
+  }
+
+  void emitBackup(int loc){
+    if( loc > highEmitLoc){
+      emitComment("BUG in emitBackup");
+    }
+    emitLoc = loc;
+  }
+
+  void emitRestore(){
+    emitLoc = highEmitLoc;
+  }
+
+  void emitComment(String c){
+    System.out.println("* " + c);
+  }
 
   public void visit(Absyn trees){
     // generate the prelude
+    emitRM("LD", gp, 0, ac ,"load gp with maxaddress");
+    emitRM("LDA", fp, 0, gp, "copy gp to fp");
+    emitRM("ST", ac, 0, ac, "clear location 0");
+  
 
     // generate the io routines
 
     // make a request to the visit method for DecList
-    System.out.println("Hello from visit!");
+    // emitComment("Hello again from visit!");
     trees.accept(this, 0, false);
+
+    // generate the finale
+    emitRM("ST", fp, globalOffset + ofpFO, fp, "push ofp");
+    emitRM("LDA", fp, globalOffset, fp, "push frame");
+    emitRM("LDA", ac, 1, pc, "load ac with ret addr");
+    emitRM_Abs("LDA", 7, mainEntry, "jump to main loc"); // need to add pointer to main
+    emitRM("LD", fp, ofpFO, fp, "pop frame");
+    emitRO("HALT",0,0,0, "halt");
+
+
+
   }
 
   final static int SPACES = 4;
 
-  private void indent( int level ) {
-    for( int i = 0; i < level * SPACES; i++ ) System.out.print( " " );
+  private void indent( int offset ) {
+    for( int i = 0; i < offset * SPACES; i++ ) System.out.print( " " );
   }
 
-  public void visit( ExpList expList, int level, boolean isAddress ) {
+  public void visit( ExpList expList, int offset, boolean isAddress ) {
     while( expList != null ) {
-      expList.head.accept( this, level, isAddress );
+      expList.head.accept( this, offset, isAddress );
       expList = expList.tail;
     } 
   }
 
-  public void visit (VarDecList varList, int level, boolean isAddress){
+  public void visit (VarDecList varList, int offset, boolean isAddress){
     while(varList != null){
-      varList.head.accept(this, level, isAddress );
+      varList.head.accept(this, offset, isAddress );
       varList = varList.tail;
     }
   }
 
-  public void visit (DecList decList, int level, boolean isAddress){
+  public void visit (DecList decList, int offset, boolean isAddress){
       while (decList != null) {
-        decList.head.accept(this, level, isAddress );
+        decList.head.accept(this, offset, isAddress );
         decList = decList.tail;
       }
   }
 
 
-  public void visit( AssignExp exp, int level, boolean isAddress ) {
-    indent( level );
-    System.out.println( "AssignExp:" );
-    level++;
-    exp.lhs.accept( this, level, isAddress );
-    exp.rhs.accept( this, level, isAddress );
+  public void visit( AssignExp exp, int offset, boolean isAddress ) {
+    exp.lhs.accept( this, offset - 1, true );
+    exp.rhs.accept( this, offset - 2, false );
   }
 
-  public void visit( IfExp exp, int level, boolean isAddress ) {
-    indent( level );
-    System.out.println( "IfExp: " );
-    level++;
-    exp.test.accept( this, level, isAddress );
-    exp.thenpart.accept( this, level, isAddress );
+  public void visit( IfExp exp, int offset, boolean isAddress ) {
+    exp.test.accept( this, offset, isAddress );
+    exp.thenpart.accept( this, offset, isAddress );
     if (exp.elsepart != null )
-       exp.elsepart.accept( this, level, isAddress );
+       exp.elsepart.accept( this, offset, isAddress );
   }
 
-  public void visit( CompoundExp exp, int level, boolean isAddress ){
-    indent( level );
-    System.out.println("CompoundExp: ");
-    level++;
-    exp.decs.accept(this, level, isAddress);
-    exp.exps.accept(this, level, isAddress);
+  public void visit( CompoundExp exp, int offset, boolean isAddress ){
+    exp.decs.accept(this, offset, isAddress);
+    emitComment("Size of frameOffset: " + frameOffset);
+    // by the time we reach this point, we'll have used up frameOffset
+    exp.exps.accept(this, offset, isAddress);
   }
 
   
 
-  public void visit( IntExp exp, int level, boolean isAddress ) {
-    indent( level );
-    System.out.println( "IntExp: " + exp.value ); 
+  public void visit( IntExp exp, int offset, boolean isAddress ) {
+    
   }
 
-  public void visit( OpExp exp, int level, boolean isAddress ) {
-    indent( level );
-    System.out.print( "OpExp:" ); 
-    switch( exp.op ) {
+  public void visit( OpExp exp, int offset, boolean isAddress ) {
+    /*switch( exp.op ) {
       case OpExp.PLUS:
-        System.out.println( " + " );
         break;
       case OpExp.MINUS:
-        System.out.println( " - " );
         break;
       case OpExp.TIMES:
-        System.out.println( " * " );
         break;
       case OpExp.DIV:
-        System.out.println( " / " );
         break;
       case OpExp.EQ:
-        System.out.println( " == " );
         break;
       case OpExp.NE:
-        System.out.println( " != " );
         break;
       case OpExp.LT:
-        System.out.println( " < " );
         break;
       case OpExp.LE:
-        System.out.println( " <= " );
         break;
       case OpExp.GT:
-        System.out.println( " > " );
         break;
       case OpExp.GE:
-        System.out.println( " >= " );
         break;
       case OpExp.UMINUS:
-        System.out.println( " - " );
         break;
       case OpExp.BITNOT:
-        System.out.println( " ~ " );
         break;
       case OpExp.AND:
-        System.out.println( " && " );
         break;
       case OpExp.OR:
-      System.out.println( " || " );
         break;
       default:
-        System.out.println( "Unrecognized operator at line " + exp.row + " and column " + exp.col);
     }
-    level++;
+      */
     if (exp.left != null)
-       exp.left.accept( this, level, isAddress );
+       exp.left.accept( this, offset, isAddress );
     if (exp.right != null)
-       exp.right.accept( this, level, isAddress );
+       exp.right.accept( this, offset, isAddress );
   }
 
-  public void visit(NameTy type, int level, boolean isAddress){
-    indent( level );
-    System.out.print( "NameTy: " ); 
+  public void visit(NameTy type, int offset, boolean isAddress){
+    
+    /* 
     switch( type.type ) {
       case NameTy.BOOL:
-        System.out.println( " bool " );
         break;
       case NameTy.INT:
-        System.out.println( " int " );
         break;
       case NameTy.VOID:
-        System.out.println( " void " );
         break;
       default:
-        System.out.println( "Unrecognized type at line " + type.row + " and column " + type.col);
     }
+      */
   }
 
   /*
 
-  public void visit( ReadExp exp, int level ) {
-    indent( level );
+  public void visit( ReadExp exp, int offset ) {
+    indent( offset );
     System.out.println( "ReadExp:" );
-    exp.input.accept( this, ++level );
+    exp.input.accept( this, ++offset );
   }
 
   */
 
   /* 
-  public void visit( RepeatExp exp, int level ) {
-    indent( level );
+  public void visit( RepeatExp exp, int offset ) {
+    indent( offset );
     System.out.println( "RepeatExp:" );
-    level++;
-    exp.exps.accept( this, level );
-    exp.test.accept( this, level ); 
+    offset++;
+    exp.exps.accept( this, offset );
+    exp.test.accept( this, offset ); 
   }
     */
 
-  public void visit( VarExp exp, int level, boolean isAddress ) {
-    indent( level );
-    System.out.println( "VarExp: " );
-    level++;
-    exp.variable.accept( this, level, isAddress );
+  public void visit( VarExp exp, int offset, boolean isAddress ) {
+    exp.variable.accept( this, offset, isAddress );
+    if(isAddress = true){
+      offset = offset - 1;
+      emitRM("LDA", ac, exp.dtype.offset, fp, "load the variable storing address");
+      emitRM("LDA", ac, offset, fp, "store the variable storing address");
+    }
+    else{
+      offset = offset - 2;
+      // working here - I'm too tired to keep going
+      // address is false - this isn't an address
+    }
   }
 
-  public void visit (BoolExp exp, int level, boolean isAddress){
-    indent( level );
-    System.out.println("BoolExp: " + exp.value);
+  public void visit (BoolExp exp, int offset, boolean isAddress){
+
   }
 
-  public void visit (SimpleVar variable, int level, boolean isAddress){
-    indent( level );
-    System.out.println("SimpleVar: " + variable.name);
+  public void visit (SimpleVar variable, int offset, boolean isAddress){
+    
   }
 
-  public void visit(IndexVar variable, int level, boolean isAddress){
-    indent( level);
-    System.out.println("IndexVar: " + variable.name);
-    level++;
-    variable.index.accept(this, level, isAddress );
+  public void visit(IndexVar variable, int offset, boolean isAddress){
+    variable.index.accept(this, offset, isAddress );
   }
 
-  public void visit( ReturnExp exp, int level, boolean isAddress ) {
-    indent( level );
-    System.out.println( "ReturnExp: " );
-    level++;
-    exp.exp.accept( this, level, isAddress );
+  public void visit( ReturnExp exp, int offset, boolean isAddress ) {
+    exp.exp.accept( this, offset, isAddress );
   }
 
-  public void visit( WhileExp exp, int level, boolean isAddress ) {
-    indent( level );
-    System.out.println( "WhileExp: " );
-    level++;
-    exp.test.accept( this, level, isAddress);
-    exp.body.accept( this, level, isAddress);
+  public void visit( WhileExp exp, int offset, boolean isAddress ) {
+    exp.test.accept( this, offset, isAddress);
+    exp.body.accept( this, offset, isAddress);
   }
 
-  public void visit ( CallExp exp, int level, boolean isAddress){
-    indent(level);
-    System.out.println("CallExp: " + exp.func);
-    level++;
-    exp.args.accept(this, level, isAddress);
+  public void visit ( CallExp exp, int offset, boolean isAddress){
+    exp.args.accept(this, offset, isAddress);
   }
 
-  public void visit (SimpleDec dec, int level, boolean isAddress){
-    indent(level);
-    System.out.println("SimpleDec: " + dec.name);
-    level++;
-    dec.type.accept(this, level, isAddress);
+  public void visit (SimpleDec dec, int offset, boolean isAddress){
+    dec.type.accept(this, offset, isAddress);
+    frameOffset--;
+    dec.offset = frameOffset;
   }
 
-  public void visit (ArrayDec dec, int level, boolean isAddress){
-    indent(level);
-    System.out.println("ArrayDec: " + dec.name);
-    level++;
-    dec.type.accept(this, level, isAddress);
-    dec.size.accept(this, level, isAddress);
+  public void visit (ArrayDec dec, int offset, boolean isAddress){
+    dec.type.accept(this, offset, isAddress);
+    dec.size.accept(this, offset, isAddress);
   }
 
-  public void visit (FunctionDec dec, int level, boolean isAddress){
-    indent(level);
-    System.out.println("FunctionDec: " + dec.func);
-    level++;
-    dec.result.accept(this, level, isAddress);
-    dec.params.accept(this, level, isAddress);
-    dec.body.accept(this, level, isAddress);
+  public void visit (FunctionDec dec, int offset, boolean isAddress){
+    dec.result.accept(this, offset, isAddress);
+    
+    
+    int funcJump = emitSkip(1);
+    if(dec.func.equals("main")){
+      mainEntry = emitSkip(0); // hmm
+    }
+    
+    emitComment("Begin function: " + dec.func);
+    emitRM("ST", ac, -1, fp, "store return address");
+    emitComment("Code inside function");
+    emitRM("LDC", ac, 42, 0, "load an arbitrary number to see if it works");
+    frameOffset = -2;
+    dec.params.accept(this, frameOffset, isAddress);
+    dec.body.accept(this, frameOffset, isAddress);
+    emitRM("LD", pc, -1, fp, "load the address stored when we entered function: " + dec.func);
+    emitComment("Exit main");
+    int funcEnd = emitSkip(0); 
+    emitBackup(funcJump);
+    emitRM_Abs("LDA", pc, funcEnd, "jump past function: " + dec.func);
+    emitRestore();
+    
+    
   }
 
   
 
 
-  public void visit(NilExp exp, int level, boolean isAddress){
+  public void visit(NilExp exp, int offset, boolean isAddress){
     // do nothing! easy. 
   }
 
-  public void visit(NilDec exp, int level, boolean isAddress){
+  public void visit(NilDec exp, int offset, boolean isAddress){
     // do nothing! easy. 
   }
 
-  public void visit(NilVarDec exp, int level, boolean isAddress){
+  public void visit(NilVarDec exp, int offset, boolean isAddress){
     // do nothing! easy. 
   }
 
   /* 
-  public void visit( WriteExp exp, int level ) {
-    indent( level );
+  public void visit( WriteExp exp, int offset ) {
+    indent( offset );
     System.out.println( "WriteExp:" );
     if (exp.output != null)
-       exp.output.accept( this, ++level );
+       exp.output.accept( this, ++offset );
   }
        */
 
