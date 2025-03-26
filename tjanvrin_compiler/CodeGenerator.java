@@ -10,6 +10,7 @@ public class CodeGenerator implements AbsynCodeVisitor {
     // generate the io routines
 
     // make a request to the visit method for DecList
+    System.out.println("Hello from visit!");
     trees.accept(this, 0, false);
   }
 

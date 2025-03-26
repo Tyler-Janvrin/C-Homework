@@ -16,6 +16,8 @@ import absyn.*;
    
 class CM {
   public final static boolean SHOW_TREE = true;
+
+  
   static public void main(String argv[]) {    
     /* Start the parser */
 
@@ -80,6 +82,45 @@ class CM {
     }
     else if(argv[1].equals("-c")){
       System.out.println("Sorry, the .tm code isn't implemented yet.");
+      String fileName = argv[0];
+      if(!fileName.endsWith(".cm")){
+        System.out.print("Invalid filename: must end with .cm");
+        return;
+      }
+      String fileFront = fileName.substring(0, fileName.length() - 3);
+
+      try {
+        parser p = new parser(new Lexer(new FileReader(argv[0])));
+        Absyn result = (Absyn)(p.parse().value);  
+           
+        PrintStream console = System.out;
+        
+        if (SHOW_TREE && result != null && p.valid == true) {
+           
+          System.setOut(new PrintStream(new NullOutputStream()));
+          SemanticAnalyzer visitor = new SemanticAnalyzer();
+          visitor.insertSystemFunctions();
+          result.accept(visitor, 0); 
+          visitor.checkLastWasMain();
+          if(result != null && p.valid == true && visitor.valid == true){
+            PrintStream filePrintStream = new PrintStream(new File(fileFront + ".tm")); 
+            System.setOut(filePrintStream);
+            CodeGenerator generator = new CodeGenerator();
+            generator.visit(result);
+          }
+        }  
+        System.setOut(console);
+      } catch (Exception e) {
+        /* do cleanup here -- possibly rethrow e */
+        e.printStackTrace();
+      }
     }
+  }
+}
+
+class NullOutputStream extends java.io.OutputStream {
+  @Override
+  public void write(int b) {
+      // Do nothing
   }
 }
