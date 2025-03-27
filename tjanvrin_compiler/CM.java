@@ -81,7 +81,7 @@ class CM {
       }
     }
     else if(argv[1].equals("-c")){
-      System.out.println("Sorry, the .tm code isn't implemented yet.");
+      // System.out.println("Sorry, the .tm code isn't implemented yet.");
       String fileName = argv[0];
       if(!fileName.endsWith(".cm")){
         System.out.print("Invalid filename: must end with .cm");
