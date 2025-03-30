@@ -1,12 +1,16 @@
 import absyn.*;
+import java.util.ArrayList;
 
 public class CodeGenerator implements AbsynCodeVisitor {
 
-  int mainEntry = 0, globalOffset = 0;
+  ArrayList<NodeSkip> skipList = new ArrayList<NodeSkip>(0);
+
+  int mainEntry = 0, inputEntry = 0, outputEntry = 0;
+  int globalOffset = 0;
   int frameOffset = 0;
-  int ofpFO = 0; // original function pointer frame offset
-  int retFO = 0; // return address frame offset
-  int initFO = 0; // initial frame offset
+  final int ofpFO = 0; // original function pointer frame offset
+  final int retFO = -1; // return address frame offset
+  final int initFO = -2; // initial frame offset
 
   // special register names
   final int ac = 0;
@@ -81,16 +85,19 @@ public class CodeGenerator implements AbsynCodeVisitor {
     // generate the io routines
     int ioSkip = emitSkip(1);
     
+    emitComment("begin the input and output routines");
     // input
-    emitRM("ST", ac, -1, fp, "store return");
+    inputEntry = emitSkip(0);
+    emitRM("ST", ac, retFO, fp, "store return");
     emitRO("IN", 0, 0, 0, "input");
-    emitRM("LD", pc, -1, fp, "return to caller");
+    emitRM("LD", pc, retFO, fp, "return to caller");
     emitComment("that's the input routine");
     // output
-    emitRM("ST", ac, -1, fp, "store return");
-    emitRM("LD", ac, -2, fp, "load output value");
+    outputEntry = emitSkip(0);
+    emitRM("ST", ac, retFO, fp, "store return");
+    emitRM("LD", ac, initFO, fp, "load output value");
     emitRO("OUT", 0, 0, 0, "output");
-    emitRM("LD", pc, -1, fp, "return to caller");
+    emitRM("LD", pc, retFO, fp, "return to caller");
     emitComment("that's the output routine");
     int ioEnd = emitSkip(0);
     emitBackup(ioSkip);
@@ -110,19 +117,34 @@ public class CodeGenerator implements AbsynCodeVisitor {
     emitRM("LD", fp, ofpFO, fp, "pop frame");
     emitRO("HALT",0,0,0, "halt");
 
-
-
+     
+    for(int i = 0; i < skipList.size(); i++){
+      NodeSkip node = skipList.get(i);
+      if(node.solved == false){
+        System.err.println("Error! Function prototype " + node.name + "called at: row " + (node.exp.row + 1) + ", col " + (node.exp.col + 1) + " but was never defined.");
+      }
+    }
   }
 
   final static int SPACES = 4;
 
+  /* 
   private void indent( int offset ) {
     for( int i = 0; i < offset * SPACES; i++ ) System.out.print( " " );
   }
+    */
 
   public void visit( ExpList expList, int offset, boolean isAddress ) {
     while( expList != null ) {
-      expList.head.accept( this, offset, isAddress );
+      expList.head.accept( this, offset, false ); // we're always accepting with false. this should work
+      if(isAddress){
+        // we're overloading the boolean flag. in this case,
+        // it's used to tell if we're in 
+        // the body of a function, or a function's arguments
+        if(!(expList.head instanceof NilExp)){
+          offset--;
+        }
+      }
       expList = expList.tail;
     } 
   }
@@ -259,14 +281,14 @@ public class CodeGenerator implements AbsynCodeVisitor {
 
   public void visit( VarExp exp, int offset, boolean isAddress ) {
     exp.variable.accept( this, offset, isAddress );
-    if(isAddress = true){
+    if(isAddress){
       emitRM("LDA", ac, exp.dtype.offset, fp, "load the address for a variable");
       emitRM("ST", ac, offset, fp, "store the address for a variable");
       emitComment("done loading and storing addresses for lhs of assignment");
     }
     else{
       emitRM("LD", ac, exp.dtype.offset, fp, "load the value of a simple variable");
-      emitRM("ST", ac, offset, fp, "load the value of a simple variable");
+      emitRM("ST", ac, offset, fp, "store the value of a simple variable");
       emitComment("done loading the value of a simple variable");
       // what was I doing...
       // working here - I'm too tired to keep going
@@ -288,6 +310,10 @@ public class CodeGenerator implements AbsynCodeVisitor {
 
   public void visit( ReturnExp exp, int offset, boolean isAddress ) {
     exp.exp.accept( this, offset, isAddress );
+    emitRM("LD", ac, offset, fp, "load result of return exp into memory");
+    emitRM("LD", pc, retFO, fp, "load return address, leaving function by return (wish I knew the name)");
+
+
   }
 
   public void visit( WhileExp exp, int offset, boolean isAddress ) {
@@ -296,7 +322,30 @@ public class CodeGenerator implements AbsynCodeVisitor {
   }
 
   public void visit ( CallExp exp, int offset, boolean isAddress){
-    exp.args.accept(this, offset, isAddress);
+    exp.args.accept(this, offset + initFO, true); // we're overloading isAddress here
+    emitRM("ST", fp, offset + ofpFO, fp, "push original frame pointer");
+    emitRM("LDA", fp, offset, fp, "push frame");
+    emitRM("LDA", ac, 1, pc, "load ac with return address");
+    if(exp.func.equals("input")){
+      emitRM_Abs("LDA", pc, inputEntry, "jump to input");
+    }
+    else if(exp.func.equals("output")){
+      emitRM_Abs("LDA", pc, outputEntry, "jump to output");
+    }
+    else{
+      // add a case here for if the body is a nilexp
+      FunctionDec functionDec = (FunctionDec) exp.dtype;
+      if(functionDec.body instanceof NilExp){
+        int loc = emitSkip(1);
+        skipList.add(new NodeSkip(functionDec.func, loc, exp));
+      }
+      else{
+        emitRM_Abs("LDA", pc, functionDec.funaddr, "jump to function body");
+      }  
+    }
+    emitRM("LD", fp, ofpFO, fp, "pop frame");
+    emitRM("ST", ac, offset, fp, "save data to offset location");
+    emitComment("done with function call");
   }
 
   public void visit (SimpleDec dec, int offset, boolean isAddress){
@@ -320,17 +369,28 @@ public class CodeGenerator implements AbsynCodeVisitor {
     }
     else{
       dec.funaddr = emitSkip(0); // yeah!
+      // do the thing you were talking about here
+      // with 
+      for(int i = 0; i < skipList.size(); i++){
+        NodeSkip skipNode = skipList.get(i);
+        if(skipNode.name.equals(dec.func) && skipNode.solved == false){
+          emitBackup(skipNode.loc);
+          emitRM_Abs("LDA", pc, dec.funaddr, "jump to function body - with skip!");
+          emitRestore(); // back-patch in function prototypes! cool!
+          skipNode.solved = true;
+        }
+      }
     }
     
     emitComment("Begin function: " + dec.func);
-    emitRM("ST", ac, -1, fp, "store return address");
+    emitRM("ST", ac, retFO, fp, "store return address");
     emitComment("Code inside function");
-    emitRM("LDC", ac, 42, 0, "load an arbitrary number to see if it works");
-    frameOffset = -2; // -2, because a function will always have two parameters
+    // emitRM("LDC", ac, 42, 0, "load an arbitrary number to see if it works");
+    frameOffset = initFO; // -2, because a function will always have two parameters
     dec.params.accept(this, frameOffset, isAddress);
     dec.body.accept(this, frameOffset, isAddress);
-    emitRM("LD", pc, -1, fp, "load the address stored when we entered function: " + dec.func);
-    emitComment("Exit main");
+    emitRM("LD", pc, retFO, fp, "load return address, leaving: " + dec.func);
+    emitComment("Exit " + dec.func);
     int funcEnd = emitSkip(0); 
     emitBackup(funcJump);
     emitRM_Abs("LDA", pc, funcEnd, "jump past function: " + dec.func);

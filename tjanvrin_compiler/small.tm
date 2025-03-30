@@ -1,6 +1,7 @@
   0:    LD 6, 0(0)	load gp with maxaddress
   1:   LDA 5, 0(6)	copy gp to fp
   2:    ST 0, 0(0)	clear location 0
+* begin the input and output routines
   4:    ST 0, -1(5)	store return
   5:    IN 0, 0, 0	input
   6:    LD 7, -1(5)	return to caller
@@ -11,55 +12,77 @@
  10:    LD 7, -1(5)	return to caller
 * that's the output routine
   3:   LDA 7, 7(7)	skip to the end of io
-* Begin function: main
+* Begin function: seven
  12:    ST 0, -1(5)	store return address
 * Code inside function
- 13:   LDC 0, 42(0)	load an arbitrary number to see if it works
-* Size of frameOffset: -4
- 14:   LDA 0, -3(5)	load the address for a variable
- 15:    ST 0, -5(5)	store the address for a variable
-* done loading and storing addresses for lhs of assignment
- 16:   LDC 0, 100(0)	load the integer value into memory
- 17:    ST 0, -6(5)	store the integer value into memory
+ 13:    LD 7, -1(5)	load return address, leaving: seven
+* Exit seven
+ 11:   LDA 7, 2(7)	jump past function: seven
+* Begin function: eight
+ 15:    ST 0, -1(5)	store return address
+* Code inside function
+ 16:    LD 7, -1(5)	load return address, leaving: eight
+* Exit eight
+ 14:   LDA 7, 2(7)	jump past function: eight
+* Begin function: printSeven
+ 18:    ST 0, -1(5)	store return address
+* Code inside function
+* Size of frameOffset: -3
+ 19:    ST 5, -5(5)	push original frame pointer
+ 20:   LDA 5, -5(5)	push frame
+ 21:   LDA 0, 1(7)	load ac with return address
+ 23:    LD 5, 0(5)	pop frame
+ 24:    ST 0, -5(5)	save data to offset location
+* done with function call
+ 25:    ST 5, -3(5)	push original frame pointer
+ 26:   LDA 5, -3(5)	push frame
+ 27:   LDA 0, 1(7)	load ac with return address
+ 28:   LDA 7, -22(7)	jump to output
+ 29:    LD 5, 0(5)	pop frame
+ 30:    ST 0, -3(5)	save data to offset location
+* done with function call
+ 31:    LD 7, -1(5)	load return address, leaving: printSeven
+* Exit printSeven
+ 17:   LDA 7, 14(7)	jump past function: printSeven
+ 22:   LDA 7, 10(7)	jump to function body - with skip!
+* Begin function: seven
+ 33:    ST 0, -1(5)	store return address
+* Code inside function
+* Size of frameOffset: -2
+ 34:   LDC 0, 7(0)	load the integer value into memory
+ 35:    ST 0, -2(5)	store the integer value into memory
 * done storing address of integer
- 18:    LD 0, -5(5)	load assignment location into memory
- 19:    LD 1, -6(5)	load assignment value into memory
- 20:    ST 1, 0(0)	store value to location of variable loaded in memory
- 21:    ST 1, -4(5)	store value to result of equals operation
-* done assigning value to variable
- 22:   LDA 0, -2(5)	load the address for a variable
- 23:    ST 0, -5(5)	store the address for a variable
-* done loading and storing addresses for lhs of assignment
- 24:   LDC 0, 200(0)	load the integer value into memory
- 25:    ST 0, -8(5)	store the integer value into memory
+ 36:    LD 0, -2(5)	load result of return exp into memory
+ 37:    LD 7, -1(5)	load return address, leaving function by return (wish I knew the name)
+ 38:    LD 7, -1(5)	load return address, leaving: seven
+* Exit seven
+ 32:   LDA 7, 6(7)	jump past function: seven
+* Begin function: main
+ 40:    ST 0, -1(5)	store return address
+* Code inside function
+* Size of frameOffset: -5
+ 41:   LDC 0, 3(0)	load the integer value into memory
+ 42:    ST 0, -7(5)	store the integer value into memory
 * done storing address of integer
- 26:   LDC 0, 250(0)	load the integer value into memory
- 27:    ST 0, -9(5)	store the integer value into memory
-* done storing address of integer
- 28:    LD 0, -8(5)	load stored value of opExp lhs
- 29:    LD 1, -9(5)	load stored value of opExp rhs
- 30:   ADD 0, 0, 1	add opExp arguments
- 31:    ST 0, -7(5)	store result of opExp in memory
-* done an opExp
- 32:   LDC 0, 50(0)	load the integer value into memory
- 33:    ST 0, -8(5)	store the integer value into memory
-* done storing address of integer
- 34:    LD 0, -7(5)	load stored value of opExp lhs
- 35:    LD 1, -8(5)	load stored value of opExp rhs
- 36:   SUB 0, 0, 1	subtract opExp arguments
- 37:    ST 0, -6(5)	store result of opExp in memory
-* done an opExp
- 38:    LD 0, -5(5)	load assignment location into memory
- 39:    LD 1, -6(5)	load assignment value into memory
- 40:    ST 1, 0(0)	store value to location of variable loaded in memory
- 41:    ST 1, -4(5)	store value to result of equals operation
-* done assigning value to variable
- 42:    LD 7, -1(5)	load the address stored when we entered function: main
-* Exit main
- 11:   LDA 7, 31(7)	jump past function: main
- 43:    ST 5, 0(5)	push ofp
- 44:   LDA 5, 0(5)	push frame
- 45:   LDA 0, 1(7)	load ac with ret addr
- 46:   LDA 7, -35(7)	jump to main loc
+ 43:    ST 5, -5(5)	push original frame pointer
+ 44:   LDA 5, -5(5)	push frame
+ 45:   LDA 0, 1(7)	load ac with return address
+ 46:   LDA 7, -29(7)	jump to function body
  47:    LD 5, 0(5)	pop frame
- 48:  HALT 0, 0, 0	halt
+ 48:    ST 0, -5(5)	save data to offset location
+* done with function call
+ 49:    ST 5, -5(5)	push original frame pointer
+ 50:   LDA 5, -5(5)	push frame
+ 51:   LDA 0, 1(7)	load ac with return address
+ 53:    LD 5, 0(5)	pop frame
+ 54:    ST 0, -5(5)	save data to offset location
+* done with function call
+ 55:    LD 7, -1(5)	load return address, leaving: main
+* Exit main
+ 39:   LDA 7, 16(7)	jump past function: main
+ 56:    ST 5, 0(5)	push ofp
+ 57:   LDA 5, 0(5)	push frame
+ 58:   LDA 0, 1(7)	load ac with ret addr
+ 59:   LDA 7, -20(7)	jump to main loc
+ 60:    LD 5, 0(5)	pop frame
+ 61:  HALT 0, 0, 0	halt
