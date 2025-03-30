@@ -1,5 +1,4 @@
 int seven(void);
-int eight(void);
 
 void printSeven(int n){
     output(seven());
@@ -11,10 +10,10 @@ int seven(void){
 
 
 void main(void){
-    int x;
-    int y;
-    int z;
-    printSeven(3);
-    eight();
-
+    int loopControl;
+    loopControl = 5;
+    while(loopControl >= 0){
+        loopControl = loopControl - 1;
+        output(loopControl);
+    }
 }

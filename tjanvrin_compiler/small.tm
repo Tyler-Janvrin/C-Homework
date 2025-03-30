@@ -18,71 +18,108 @@
  13:    LD 7, -1(5)	load return address, leaving: seven
 * Exit seven
  11:   LDA 7, 2(7)	jump past function: seven
-* Begin function: eight
+* Begin function: printSeven
  15:    ST 0, -1(5)	store return address
 * Code inside function
- 16:    LD 7, -1(5)	load return address, leaving: eight
-* Exit eight
- 14:   LDA 7, 2(7)	jump past function: eight
-* Begin function: printSeven
- 18:    ST 0, -1(5)	store return address
-* Code inside function
 * Size of frameOffset: -3
- 19:    ST 5, -5(5)	push original frame pointer
- 20:   LDA 5, -5(5)	push frame
- 21:   LDA 0, 1(7)	load ac with return address
- 23:    LD 5, 0(5)	pop frame
- 24:    ST 0, -5(5)	save data to offset location
+ 16:    ST 5, -5(5)	push original frame pointer
+ 17:   LDA 5, -5(5)	push frame
+ 18:   LDA 0, 1(7)	load ac with return address
+ 20:    LD 5, 0(5)	pop frame
+ 21:    ST 0, -5(5)	save data to offset location
 * done with function call
- 25:    ST 5, -3(5)	push original frame pointer
- 26:   LDA 5, -3(5)	push frame
- 27:   LDA 0, 1(7)	load ac with return address
- 28:   LDA 7, -22(7)	jump to output
- 29:    LD 5, 0(5)	pop frame
- 30:    ST 0, -3(5)	save data to offset location
+ 22:    ST 5, -3(5)	push original frame pointer
+ 23:   LDA 5, -3(5)	push frame
+ 24:   LDA 0, 1(7)	load ac with return address
+ 25:   LDA 7, -19(7)	jump to output
+ 26:    LD 5, 0(5)	pop frame
+ 27:    ST 0, -3(5)	save data to offset location
 * done with function call
- 31:    LD 7, -1(5)	load return address, leaving: printSeven
+ 28:    LD 7, -1(5)	load return address, leaving: printSeven
 * Exit printSeven
- 17:   LDA 7, 14(7)	jump past function: printSeven
- 22:   LDA 7, 10(7)	jump to function body - with skip!
+ 14:   LDA 7, 14(7)	jump past function: printSeven
+ 19:   LDA 7, 10(7)	jump to function body - with skip!
 * Begin function: seven
- 33:    ST 0, -1(5)	store return address
+ 30:    ST 0, -1(5)	store return address
 * Code inside function
 * Size of frameOffset: -2
- 34:   LDC 0, 7(0)	load the integer value into memory
- 35:    ST 0, -2(5)	store the integer value into memory
+ 31:   LDC 0, 7(0)	load the integer value into memory
+ 32:    ST 0, -2(5)	store the integer value into memory
 * done storing address of integer
- 36:    LD 0, -2(5)	load result of return exp into memory
- 37:    LD 7, -1(5)	load return address, leaving function by return (wish I knew the name)
- 38:    LD 7, -1(5)	load return address, leaving: seven
+ 33:    LD 0, -2(5)	load result of return exp into memory
+ 34:    LD 7, -1(5)	load return address, leaving function by return (wish I knew the name)
+ 35:    LD 7, -1(5)	load return address, leaving: seven
 * Exit seven
- 32:   LDA 7, 6(7)	jump past function: seven
+ 29:   LDA 7, 6(7)	jump past function: seven
 * Begin function: main
- 40:    ST 0, -1(5)	store return address
+ 37:    ST 0, -1(5)	store return address
 * Code inside function
-* Size of frameOffset: -5
- 41:   LDC 0, 3(0)	load the integer value into memory
- 42:    ST 0, -7(5)	store the integer value into memory
+* Size of frameOffset: -3
+ 38:   LDA 0, -2(5)	load the address for a variable
+ 39:    ST 0, -4(5)	store the address for a variable
+* done loading and storing addresses for lhs of assignment
+ 40:   LDC 0, 5(0)	load the integer value into memory
+ 41:    ST 0, -5(5)	store the integer value into memory
 * done storing address of integer
- 43:    ST 5, -5(5)	push original frame pointer
- 44:   LDA 5, -5(5)	push frame
- 45:   LDA 0, 1(7)	load ac with return address
- 46:   LDA 7, -29(7)	jump to function body
- 47:    LD 5, 0(5)	pop frame
- 48:    ST 0, -5(5)	save data to offset location
+ 42:    LD 0, -4(5)	load assignment location into memory
+ 43:    LD 1, -5(5)	load assignment value into memory
+ 44:    ST 1, 0(0)	store value to location of variable loaded in memory
+ 45:    ST 1, -3(5)	store value to result of equals operation
+* done assigning value to variable
+ 46:    LD 0, -2(5)	load the value of a simple variable
+ 47:    ST 0, -4(5)	store the value of a simple variable
+* done loading the value of a simple variable
+ 48:   LDC 0, 0(0)	load the integer value into memory
+ 49:    ST 0, -5(5)	store the integer value into memory
+* done storing address of integer
+ 50:    LD 0, -4(5)	load stored value of opExp lhs
+ 51:    LD 1, -5(5)	load stored value of opExp rhs
+ 52:   SUB 0, 0, 1	subtract ac1 from ac, getting difference
+ 54:   LDC 0, 1(0)	case for true, load 1
+ 56:   LDC 0, 0(0)	case for false, load 0
+ 53:   JLT 0, 2(7)	jump to the false case
+ 55:   LDA 7, 1(7)	jump around the false case
+ 57:    ST 0, -3(5)	store result of opExp in memory
+* done an opExp
+ 58:    LD 0, -3(5)	load stored value of ifExp test
+* Size of frameOffset: -3
+ 60:   LDA 0, -2(5)	load the address for a variable
+ 61:    ST 0, -4(5)	store the address for a variable
+* done loading and storing addresses for lhs of assignment
+ 62:    LD 0, -2(5)	load the value of a simple variable
+ 63:    ST 0, -6(5)	store the value of a simple variable
+* done loading the value of a simple variable
+ 64:   LDC 0, 1(0)	load the integer value into memory
+ 65:    ST 0, -7(5)	store the integer value into memory
+* done storing address of integer
+ 66:    LD 0, -6(5)	load stored value of opExp lhs
+ 67:    LD 1, -7(5)	load stored value of opExp rhs
+ 68:   SUB 0, 0, 1	subtract opExp arguments
+ 69:    ST 0, -5(5)	store result of opExp in memory
+* done an opExp
+ 70:    LD 0, -4(5)	load assignment location into memory
+ 71:    LD 1, -5(5)	load assignment value into memory
+ 72:    ST 1, 0(0)	store value to location of variable loaded in memory
+ 73:    ST 1, -3(5)	store value to result of equals operation
+* done assigning value to variable
+ 74:    LD 0, -2(5)	load the value of a simple variable
+ 75:    ST 0, -5(5)	store the value of a simple variable
+* done loading the value of a simple variable
+ 76:    ST 5, -3(5)	push original frame pointer
+ 77:   LDA 5, -3(5)	push frame
+ 78:   LDA 0, 1(7)	load ac with return address
+ 79:   LDA 7, -73(7)	jump to output
+ 80:    LD 5, 0(5)	pop frame
+ 81:    ST 0, -3(5)	save data to offset location
 * done with function call
- 49:    ST 5, -5(5)	push original frame pointer
- 50:   LDA 5, -5(5)	push frame
- 51:   LDA 0, 1(7)	load ac with return address
- 53:    LD 5, 0(5)	pop frame
- 54:    ST 0, -5(5)	save data to offset location
-* done with function call
- 55:    LD 7, -1(5)	load return address, leaving: main
+ 59:   JEQ 0, 23(7)	if false, jump outside the loop
+ 82:   LDA 7, -37(7)	otherwise, jump back to the start of the loop
+ 83:    LD 7, -1(5)	load return address, leaving: main
 * Exit main
- 39:   LDA 7, 16(7)	jump past function: main
- 56:    ST 5, 0(5)	push ofp
- 57:   LDA 5, 0(5)	push frame
- 58:   LDA 0, 1(7)	load ac with ret addr
- 59:   LDA 7, -20(7)	jump to main loc
- 60:    LD 5, 0(5)	pop frame
- 61:  HALT 0, 0, 0	halt
+ 36:   LDA 7, 47(7)	jump past function: main
+ 84:    ST 5, 0(5)	push ofp
+ 85:   LDA 5, 0(5)	push frame
+ 86:   LDA 0, 1(7)	load ac with ret addr
+ 87:   LDA 7, -51(7)	jump to main loc
+ 88:    LD 5, 0(5)	pop frame
+ 89:  HALT 0, 0, 0	halt

@@ -176,9 +176,27 @@ public class CodeGenerator implements AbsynCodeVisitor {
 
   public void visit( IfExp exp, int offset, boolean isAddress ) {
     exp.test.accept( this, offset, isAddress );
+
+    emitRM("LD",ac, offset, fp, "load stored value of ifExp test");
+    // conditional jump
+    int conditionalJump = emitSkip(1);
+    // code for true case
     exp.thenpart.accept( this, offset, isAddress );
+    // unconditional jump
+    int unconditionalJump = emitSkip(1);
+    int labelOne = emitSkip(0);
+    // code for false case
     if (exp.elsepart != null )
        exp.elsepart.accept( this, offset, isAddress );
+    // code after if statement
+    int labelTwo = emitSkip(0);
+
+    emitBackup(conditionalJump);
+    emitRM_Abs("JEQ", ac, labelOne, "jump to the false case");
+    emitRestore();
+    emitBackup(unconditionalJump);
+    emitRM_Abs("LDA", pc, labelTwo, "jump around the false case");
+    emitRestore();
   }
 
   public void visit( CompoundExp exp, int offset, boolean isAddress ){
@@ -194,6 +212,28 @@ public class CodeGenerator implements AbsynCodeVisitor {
     emitRM("LDC", ac, Integer.valueOf(exp.value), ac, "load the integer value into memory");
     emitRM("ST", ac, offset, fp, "store the integer value into memory");
     emitComment("done storing address of integer");
+  }
+
+  public void opExpHelper(String opCode){  
+    emitRO("SUB", ac, ac, ac1, "subtract ac1 from ac, getting difference"); 
+    // conditional jump
+    int conditionalJump = emitSkip(1);
+    // code for true case
+    emitRM("LDC", ac, 1, 0, "case for true, load 1");        
+    // unconditional jump
+    int unconditionalJump = emitSkip(1);
+    int labelOne = emitSkip(0);
+    // code for false case
+    emitRM("LDC", ac, 0, 0, "case for false, load 0");        
+    // code after if statement
+    int labelTwo = emitSkip(0);
+
+    emitBackup(conditionalJump);
+    emitRM_Abs(opCode, ac, labelOne, "jump to the false case");
+    emitRestore();
+    emitBackup(unconditionalJump);
+    emitRM_Abs("LDA", pc, labelTwo, "jump around the false case");
+    emitRestore();
   }
 
   public void visit( OpExp exp, int offset, boolean isAddress ) {
@@ -219,24 +259,53 @@ public class CodeGenerator implements AbsynCodeVisitor {
         emitRO("DIV", ac, ac, ac1, "divide opExp arguments");
         break;
       case OpExp.EQ: // we'll do all of these when we get to ifs and whiles. first, I want to implement functions
+        opExpHelper("JNE");
         break;
       case OpExp.NE:
+        opExpHelper("JEQ");
         break;
       case OpExp.LT:
+        opExpHelper("JGE");
         break;
       case OpExp.LE:
+        opExpHelper("JGT");
         break;
       case OpExp.GT:
+        opExpHelper("JLE");
         break;
       case OpExp.GE:
+        opExpHelper("JLT");
         break;
       case OpExp.UMINUS:
+        emitRM("LDC", ac, 0, 0, "load stored value of opExp rhs");
+        emitRO("SUB", ac, ac, ac1, "subtract opExp arguments");
         break;
       case OpExp.BITNOT:
+      emitRM("LD", ac, offset - 2, fp, "load stored value of bitnot argument");
+      // conditional jump
+      int conditionalJump = emitSkip(1);
+      // code for true case // we flip it to false case
+      emitRM("LDC", ac, 0, 0, "case for true, invert to zero");  
+      // unconditional jump
+      int unconditionalJump = emitSkip(1);
+      int labelOne = emitSkip(0);
+      // code for false case
+      emitRM("LDC", ac, 1, 0, "case for false, invert to one"); 
+      // code after if statement
+      int labelTwo = emitSkip(0);
+
+      emitBackup(conditionalJump);
+      emitRM_Abs("JEQ", ac, labelOne, "jump to the false case");
+      emitRestore();
+      emitBackup(unconditionalJump);
+      emitRM_Abs("LDA", pc, labelTwo, "jump around the false case");
+      emitRestore();
         break;
       case OpExp.AND:
+        emitRO("MUL", ac, ac, ac1, "and (multiply) opExp arguments");
         break;
       case OpExp.OR:
+        emitRO("ADD", ac, ac, ac1, "or (add) opExp arguments");
         break;
       default:
     }
@@ -297,7 +366,16 @@ public class CodeGenerator implements AbsynCodeVisitor {
   }
 
   public void visit (BoolExp exp, int offset, boolean isAddress){
-    // do nothing
+    int boolValue;
+    if(exp.value == true){
+      boolValue = 1;
+    }
+    else{
+      boolValue = 0;
+    }
+    emitRM("LDC", ac, boolValue, ac, "load the boolean value into memory");
+    emitRM("ST", ac, offset, fp, "store the boolean value into memory");
+    emitComment("done storing address of boolean");
   }
 
   public void visit (SimpleVar variable, int offset, boolean isAddress){
@@ -317,8 +395,26 @@ public class CodeGenerator implements AbsynCodeVisitor {
   }
 
   public void visit( WhileExp exp, int offset, boolean isAddress ) {
+    
+    // code for while test
+    int labelOne = emitSkip(0);
     exp.test.accept( this, offset, isAddress);
+    emitRM("LD",ac, offset, fp, "load stored value of ifExp test");
+    // conditional jump on false to end
+    int conditionalJump = emitSkip(1);
+    // code for while body
     exp.body.accept( this, offset, isAddress);
+    // unconditional jump to while test
+    int unconditionalJump = emitSkip(1);
+    int labelTwo = emitSkip(0);
+
+    emitBackup(conditionalJump);
+    emitRM_Abs("JEQ", ac, labelTwo, "if false, jump outside the loop");
+    emitRestore();
+    emitBackup(unconditionalJump);
+    emitRM_Abs("LDA", pc, labelOne, "otherwise, jump back to the start of the loop");
+    emitRestore();
+    
   }
 
   public void visit ( CallExp exp, int offset, boolean isAddress){
