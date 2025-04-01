@@ -1,6 +1,6 @@
 /* 
 This is a simple program that should compile without errors.
-It finds base^exponent for a given base and exponent.
+It finds base^exponent for a given base and exponent, entered on the command line.
 */
 
 int power(int base, int exponent){
