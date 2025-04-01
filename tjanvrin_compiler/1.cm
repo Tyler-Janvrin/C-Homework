@@ -3,12 +3,11 @@ This is a simple program that should compile without errors.
 It finds base^exponent for a given base and exponent.
 */
 
-int power(int base, int exponent);
-
 int power(int base, int exponent){
     int count;
-    int arr[6];
     int running_total;
+
+    running_total = base;
 
     count = exponent;
 
@@ -20,7 +19,7 @@ int power(int base, int exponent){
     return running_total;
 }
 
-int main( void ){
+void main( void ){
     int base;
     int exponent;
     int result;
@@ -30,5 +29,5 @@ int main( void ){
 
     result = power(base, exponent);
 
-    return result;    
+    output(result);    
 }

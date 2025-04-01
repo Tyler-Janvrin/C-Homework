@@ -720,6 +720,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
       System.err.println("Error: row: " + (dec.row + 1) + " column: " + (dec.col + 1) + " variable declared as type void");
       valid = false;
     }
+
+    dec.nestLevel = level; // keep track of whether it's at the global level or not
     
     insert(new NodeType(dec.name, dec, level));
   }

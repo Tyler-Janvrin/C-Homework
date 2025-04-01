@@ -1,0 +1,26 @@
+/* 
+For this one, I want to try some errors regarding functions.
+
+There's an error on line 20, and on line 22. Both are mismatched function calls:
+I wanted to show that my implementation works with both 
+functions and prototypes.
+
+There's also one error that doesn't have an associated line.
+This is because the last function in this program isn't int main(void).
+*/
+
+
+int prototype(int x, bool y);
+
+void realFunc(void){
+    int y;
+    if(realFunc()){
+        int x;
+    }
+}
+
+void notMain(void){
+    x = prototype();
+
+    realFunc(7, true, 9);
+}

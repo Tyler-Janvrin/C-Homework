@@ -1,0 +1,38 @@
+/* 
+ I tried to cover in this file some stuff that I didn't get a chance
+ to put in my other files. There should be 3 errors here.
+
+ On line 25, we have an attempt to index a non-index variable.
+
+ On line 27, we pass void to the argument of an if statement, 
+ which expects int or bool.
+
+ On line 33, we return a bool value in a void function, and on 
+ line 37, we return an in value in a bool functtion.
+ These are both errors, because the type of the function doesn't
+ match the return type.
+ */
+
+void someFunc(int x);
+
+void someFunc(int x){
+    bool y[5];
+
+    x[3];
+
+    if(someFunc){
+        /* Doesn't matter */
+    }
+}
+
+int extraReturn( void ){
+    return true;
+} 
+
+bool mismatchedReturn( void ){
+    return 17;
+} 
+
+void main(void){
+
+}

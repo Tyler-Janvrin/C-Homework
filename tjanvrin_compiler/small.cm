@@ -1,19 +1,33 @@
-int seven(void);
+int minus(int m);
+int plus(int n);
 
-void printSeven(int n){
-    output(seven());
+int x;
+int y;
+
+void loop(void){
+    if(y > 0){
+        plus(x);
+        minus(y);
+        loop();
+    }
 }
 
-int seven(void){
-    return 7;
+int minus(int m){
+    y = y - 1;
+    return y;
 }
 
+int plus(int n){
+    x = x + 1;
+    return x;
+}
 
 void main(void){
-    int loopControl;
-    loopControl = 5;
-    while(loopControl >= 0){
-        loopControl = loopControl - 1;
-        output(loopControl);
-    }
+    x = input();
+    y = input();
+    
+    loop();
+
+    output(x);
+    output(y);
 }

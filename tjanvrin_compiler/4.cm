@@ -1,26 +1,30 @@
 /* 
-For this one, I want to try some errors regarding functions.
+This program deals with invalid expressions and declarations inside a function.
 
-There's an error on line 20, and on line 22. Both are mismatched function calls:
-I wanted to show that my implementation works with both 
-functions and prototypes.
+The first error, on line 25, is that we've tried to declare an 
+int variable as a number. My error handling skips this statement when it occurs.
 
-There's also one error that doesn't have an associated line.
-This is because the last function in this program isn't int main(void).
-*/
+The second error, on line 28, is a missing operator. 
+
+The third error, on line 29, is also a missing operator
+(between the 1 and the a).
 
 
-int prototype(int x, bool y);
+If you look at the output for this file, you should see that 
+we're able to partially recover from the first error 
+because it's contained within parentheses, but the second error
+consumes the entire line. I tried to come up with a solution that
+would let me recoverc completely from the second case, but I couldn't figure
+one out. The best I could do was to skip the entire assignment.
 
-void realFunc(void){
-    int y;
-    if(realFunc()){
-        int x;
-    }
-}
+ */
 
-void notMain( int x){
-    x = prototype();
-
-    realFunc(7, true, 9);
+int some_func(int x, int y, bool b){
+    int 5;
+    int dog;
+    int cat;
+    int a;
+    
+    a = 5 - (dog cat);
+    b = 1a;
 }

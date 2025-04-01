@@ -1,42 +1,36 @@
 /* 
- I tried to cover in this file some stuff that I didn't get a chance
- to put in my other files. There should be 4 errors here.
+Three errors in this one as well.
 
- On line 25, we have an attempt to index a non-index variable.
+On line 23, we've got some extra operators.
+I remove them, and parse the statement as though
+they weren't there.
 
- On line 27, we pass void to the argument of an if statement, 
- which expects int or bool.
+On line 30, I've got some nonsense inside a
+while loop's condition check. Whenever 
+this happens, I throw an error and assume
+that the loop condition was "false".
 
- On line 33, we return a bool value in a void function, and on 
- line 37, we return an in value in a bool functtion.
- These are both errors, because the type of the function doesn't
- match the return type.
+On line 34, I've got some more unparsable 
+content in front of a return statement. 
+When this happens, I treat it as an empty 
+return.
 
- On line 40, we're missing a return statement in main. The location of this error is
- the location of the function, since we don't know "where" the missing 
- return statement should be.
  */
 
-void someFunc(int x);
+int main( void ){
+    int x;
 
-void someFunc(int x){
-    bool y[5];
+    if (x == 2 || * + x >= 4){
+        int x;
 
-    x[3];
-
-    if(someFunc){
-        /* Doesn't matter */
+        x = x + 1;
+        output(x);
     }
-}
 
-int extraReturn( void ){
-    return true;
-} 
+    while( dog frog horse cat){
+        x = x + 1;
+    }
 
-bool mismatchedReturn( void ){
-    return 17;
-} 
-
-int main(void){
+    return 5 6;
 
 }

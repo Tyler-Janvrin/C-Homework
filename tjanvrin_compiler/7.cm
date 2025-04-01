@@ -1,0 +1,46 @@
+/* 
+For this program, I'm focusing on type checking.
+
+On line 28, I show an error resulting from the assignment of 
+a boolean value to a relational operator. A little earlier, 
+I show that same operator working correctly.
+
+On line 42, I try to assign an int to a boolean variable, resulting in 
+another error. I also show some examples of assignment working correctly.
+
+Finally, on line 45, I attempt to index an array using a non-int type
+(in this case, a boolean value). As before, I also show some examples 
+of this working correctly.
+
+
+ */
+
+int x;
+bool y;
+
+void exampleFunc( int x ){
+    if(x > 0 && x < 10){
+        int z;
+        z = input();
+        z = z + 1;
+        output(z);
+    }
+    if(x > 0 && x < true){
+        int z;
+        z = input();
+        z = z + 1;
+        output(z);
+    }
+}
+
+void main(void){
+    int x;
+    bool y;
+    bool boolarray[7];
+
+    x = 17;
+    y = x;
+
+    y = boolarray[1 + 2];
+    y = boolarray[1 == 1];
+}

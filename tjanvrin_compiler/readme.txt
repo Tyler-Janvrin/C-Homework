@@ -20,4 +20,6 @@ I've provided the required test files, as requested.
 
 In my implementation of comments, they can't be nested. Trying to nest them will result in an error. I hope that's okay.
 
-
+For the 0-9 example files I've included in this project, I've re-used some of the files I generated for previous projects for numbers 4-8.
+I hope that's okay; I didn't feel like it made sense to rewrite them, since I already have perfectly good semantic and syntactic tests from checkpoints 1 and 2. 
+If it turns out that this is a problem, sorry!

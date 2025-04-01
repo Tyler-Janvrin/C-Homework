@@ -1,0 +1,30 @@
+/* 
+This program shows some problems with undefined and redefined variables.
+
+It also includes some variables without problems, to show that they work fine.
+
+On row 20, we have the variable y being declared twice,
+and on row 26, we have the undeclared variable q being used.
+
+Note that using the undeclared q doesn't cause any further errors,
+because we infer the type (int) for the result of x + q, 
+even though we don't know the value of q.
+ */
+
+int x;
+bool y;
+
+void main(void){
+    int x;
+    bool y;
+    int y;
+
+    x = 0;
+
+    while( x < 5){
+        output(x);
+        output(x + q);
+    }
+
+    return x;
+}

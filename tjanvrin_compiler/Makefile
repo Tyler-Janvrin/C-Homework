@@ -27,4 +27,4 @@ tm: tm.c
 	$(CC) $(CFLAGS) tm.c -o tm
 
 clean:
-	rm -f parser.java Lexer.java sym.java *.class absyn/*.class *~ *.abs *.sym tm
+	rm -f parser.java Lexer.java sym.java *.class absyn/*.class *~ *.abs *.sym *.tm tm

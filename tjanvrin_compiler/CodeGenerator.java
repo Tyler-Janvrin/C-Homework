@@ -350,13 +350,23 @@ public class CodeGenerator implements AbsynCodeVisitor {
 
   public void visit( VarExp exp, int offset, boolean isAddress ) {
     exp.variable.accept( this, offset, isAddress );
+
+    int ptr;
+
+    if(exp.dtype.nestLevel == 0){
+      ptr = gp;
+    }
+    else{
+      ptr = fp;
+    }
+
     if(isAddress){
-      emitRM("LDA", ac, exp.dtype.offset, fp, "load the address for a variable");
+      emitRM("LDA", ac, exp.dtype.offset, ptr, "load the address for a variable");
       emitRM("ST", ac, offset, fp, "store the address for a variable");
       emitComment("done loading and storing addresses for lhs of assignment");
     }
     else{
-      emitRM("LD", ac, exp.dtype.offset, fp, "load the value of a simple variable");
+      emitRM("LD", ac, exp.dtype.offset, ptr, "load the value of a simple variable");
       emitRM("ST", ac, offset, fp, "store the value of a simple variable");
       emitComment("done loading the value of a simple variable");
       // what was I doing...
@@ -446,8 +456,17 @@ public class CodeGenerator implements AbsynCodeVisitor {
 
   public void visit (SimpleDec dec, int offset, boolean isAddress){
     dec.type.accept(this, offset, isAddress);
-    dec.offset = frameOffset;
-    frameOffset--;
+    if(dec.nestLevel == 0){
+      // case for global variable
+      dec.offset = globalOffset;
+      globalOffset--;
+    }
+    else{
+      // case for regular variable
+      dec.offset = frameOffset;
+      frameOffset--;
+    }
+    
   }
 
   public void visit (ArrayDec dec, int offset, boolean isAddress){
